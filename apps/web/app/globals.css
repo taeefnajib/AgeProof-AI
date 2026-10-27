@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/*
+ * Calm, warm palette. Priority colours avoid alarming red (CLAUDE.md §5):
+ * amber = minor, orange = worth checking / discuss soon, grey = info.
+ */
+@theme {
+  --color-paper: #faf8f4;
+  --color-card: #ffffff;
+  --color-ink: #1d2a2c;
+  --color-muted: #5d6b6d;
+  --color-line: #e6e1d8;
+  --color-accent: #2f6f68;
+  --color-accent-soft: #e3efec;
+  --color-amber: #d99a1e;
+  --color-orange: #d9692b;
+  --color-stone: #8b8f8c;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Print: the OT report page hides app chrome. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "ageproof-ai",
+  "private": true,
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web",
+    "test": "npm test -w apps/web",
+    "lint": "npm run lint -w apps/web",
+    "smoke:meta": "npm run smoke:meta -w apps/web",
+    "demo:build": "npm run demo:build -w apps/web"
+  }
+}
