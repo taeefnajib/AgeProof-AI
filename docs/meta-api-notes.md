@@ -75,11 +75,13 @@ We parse with `@meta-sam/parser@0.1.0`:
 
 Also available but not used yet: box/point prompts (`<0f>1<|box;...|>`, `buildObjectPrompt`, at most 16 objects) and video (`input_video`, MP4/MOV, billed per frame with a 50-frame minimum).
 
-## Verified by smoke test
+## Verified by smoke test (28 Oct 2026)
 
-_Pending: needs `MODEL_API_KEY`. Fill in from `npm run smoke:meta` output:_
-- [ ] Both `muse-spark-1.3` and `sam-3.1` appear in `GET /v1/models` for our team
-- [ ] Muse Spark accepts a base64 data URL plus `json_schema` response_format
-- [ ] SAM accepts `detail: "auto"` on `input_image`
-- [ ] Mask raster size compared with box size (is it the same resolution, or downsampled for big objects?)
-- [ ] Latency per SAM call on a 1600px image
+- [x] `GET /v1/models` lists `muse-wonder-1.0, sam-3.1, muse-spark-1.3, muse-spark-1.2, muse-spark-1.1, muse-image-1.0, muse-voice-transcribe-1.0`, plus the contributor variants, which we don't use.
+- [x] Muse Spark accepts a base64 data URL with a `json_schema` response_format, and the output matched the schema. A 900×1600 image came to about **1,850 prompt tokens**. `muse-spark-1.3` reasons by default: 454 of the 486 completion tokens were `reasoning_tokens`, and the call took about 4.5s.
+- [x] SAM accepts `detail: "auto"` on `input_image`.
+- [x] SAM stream events, in order: `response.created`, `response.in_progress`, `response.output_item.added`, `response.content_part.added`, `response.output_text.delta`, `response.output_text.done`, `response.content_part.done`, `response.output_item.done`, `response.completed`.
+- [x] SAM `usage` is `{"images_processed":1, "input_tokens":0, "output_tokens":0, ...}`. It is billed per image, not per token.
+- [x] `c` comes back as a full float (e.g. `c=0.9452055096626282`) when `include_confidence: "true"` is set.
+- [x] **The mask raster is full resolution and matches the box.** Box `x1=560..x2=697` (inclusive) became parser bounds `[560, 698)`, 138 px wide, and the raster was also 138×278. So the mask→image scale is 1:1. We keep the general scaling code anyway.
+- [x] Latency: about 1.5–4s per SAM call on a 1600px image. With 6 calls in parallel, a whole photo takes about 4–5.5s. Inventory takes about 4.5–11s. **A full photo takes about 10–17s uncached and costs about $0.02–0.04.**
