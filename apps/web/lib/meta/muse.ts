@@ -43,10 +43,12 @@ export async function museJson<S extends z.ZodType>(opts: {
   schema: S;
   system: string;
   user: ContentPart[];
+  /** Muse Spark always reasons; lower effort = faster and cheaper. "none" is rejected (400). */
+  reasoningEffort?: "minimal" | "low" | "medium" | "high";
 }): Promise<MuseJsonResult<z.infer<S>>> {
   const model = museModel();
   const jsonSchema = jsonSchemaFor(opts.schema);
-  const key = hashKey(model, opts.promptVersion, opts.system, opts.user, jsonSchema);
+  const key = hashKey(model, opts.promptVersion, opts.reasoningEffort ?? "default", opts.system, opts.user, jsonSchema);
   const started = Date.now();
 
   const { value, hit } = await cached(`muse-${opts.op}`, key, async () => {
@@ -59,6 +61,7 @@ export async function museJson<S extends z.ZodType>(opts: {
       const res = await metaClient().chat.completions.create({
         model,
         messages,
+        ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
         response_format: {
           type: "json_schema",
           json_schema: { name: opts.schemaName, schema: jsonSchema },

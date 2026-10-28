@@ -1,16 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { SAM_MODEL } from "../meta/client";
+import { EXPLAIN_PROMPT_VERSION } from "../prompts/explain";
 import { INVENTORY_PROMPT_VERSION } from "../prompts/inventory";
 import type { PhotoAnalysis, StepTiming } from "../schema/analysis";
+import type { ValidationStats } from "../schema/validation";
 import { ALWAYS_SEGMENT, type RoomType } from "../schema/vocabulary";
+import { runExplain } from "./explain";
 import { candidatesToFindings } from "./findings";
 import { runInventory } from "./inventory";
 import { preprocess } from "./preprocess";
+import { blurPeople, renderRegionOverlay, toDataUrl } from "./privacy";
 import { runRules } from "./rules";
 import { runSegment } from "./segment";
+import { validateFindings } from "./validate";
 
 /**
- * Runs the pipeline for one photo: preprocess → inventory → segment → rules.
+ * Runs the pipeline for one photo:
+ * preprocess → inventory → segment → rules → (blur people) → explain → validate.
  */
 export async function analyzePhoto(
   input: Buffer,
@@ -67,25 +73,77 @@ export async function analyzePhoto(
     : [];
   record({ step: "rules", ms: Date.now() - t, detail: `${candidates.length} candidates` });
 
+  // Privacy: blur people before anything is displayed or sent to the VLM again.
+  const privacy = await blurPeople(pre.jpeg, seg.regions, pre.width, pre.height);
+  const photoDataUrl = privacy.blurred ? toDataUrl(privacy.jpeg) : pre.dataUrl;
+
+  // Step 4 + 5: explain, then validate. Any explain failure falls back to rule wording
+  // so the demo never breaks on a model hiccup.
+  let findings = candidatesToFindings(candidates);
+  let findingsSource: "rules" | "explain" = "rules";
+  let validation: ValidationStats | null = null;
+  let explainCost = 0;
+  let explainError: string | null = null;
+  if (usable) {
+    t = Date.now();
+    try {
+      const overlay = await renderRegionOverlay(privacy.jpeg, seg.regions, pre.width, pre.height);
+      const exp = await runExplain({
+        photoDataUrl,
+        overlayDataUrl: toDataUrl(overlay),
+        roomType,
+        regions: seg.regions,
+        candidates,
+        luminance: pre.luminance,
+        width: pre.width,
+        height: pre.height,
+      });
+      explainCost = exp.cost_usd;
+      record({
+        step: "explain",
+        ms: Date.now() - t,
+        detail: `${exp.data.findings.length} proposed, ${exp.data.rejected.length} rejected`,
+        cached: exp.cached,
+      });
+      t = Date.now();
+      const v = validateFindings(exp.data, seg.regions, candidates);
+      findings = v.findings;
+      validation = v.stats;
+      findingsSource = "explain";
+      record({
+        step: "validate",
+        ms: Date.now() - t,
+        detail: `${v.stats.kept} kept, ${v.stats.dropped_ungrounded} ungrounded dropped`,
+      });
+    } catch (e) {
+      explainError = (e as Error).message;
+      console.error("[explain] falling back to rule findings:", explainError);
+      record({ step: "explain", ms: Date.now() - t, detail: "unavailable, using rule wording" });
+    }
+  }
+
   return {
     id: randomUUID(),
     sha256: pre.sha256,
     width: pre.width,
     height: pre.height,
-    image_data_url: pre.dataUrl,
+    image_data_url: photoDataUrl,
+    people_blurred: privacy.blurred,
     luminance: pre.luminance,
     inventory: inv.data,
     room_type: roomType,
     room_type_source: opts.roomType ? "user" : "auto",
     regions: seg.regions,
     candidates,
-    findings: candidatesToFindings(candidates),
-    findings_source: "rules",
+    findings,
+    findings_source: findingsSource,
+    validation,
+    explain_error: explainError,
     concept_runs: seg.runs,
     timings,
-    prompt_versions: { inventory: INVENTORY_PROMPT_VERSION },
+    prompt_versions: { inventory: INVENTORY_PROMPT_VERSION, explain: EXPLAIN_PROMPT_VERSION },
     models: { vlm: inv.model, segmentation: process.env.SAM_PROVIDER === "modal" ? "sam3.1-modal" : SAM_MODEL },
-    cost_usd: Math.round((inv.cost_usd + seg.cost_usd) * 100000) / 100000,
+    cost_usd: Math.round((inv.cost_usd + seg.cost_usd + explainCost) * 100000) / 100000,
     created_at: new Date().toISOString(),
   };
 }

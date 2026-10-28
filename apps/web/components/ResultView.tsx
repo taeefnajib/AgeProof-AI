@@ -191,6 +191,18 @@ export function ResultView() {
               <dd>
                 {analysis.candidates.map((c) => `${c.rule_id}: ${c.measurement}`).join("; ") || "none fired"}
               </dd>
+              <dt>Grounding</dt>
+              <dd>
+                {analysis.validation
+                  ? `${analysis.validation.proposed} proposed by Muse Spark · ${analysis.validation.dropped_ungrounded} dropped (cited unknown regions) · ${analysis.validation.rejected.length} rule candidates rejected · ${analysis.validation.restored} restored`
+                  : "explain step unavailable; showing rule wording"}
+              </dd>
+              {analysis.people_blurred > 0 && (
+                <>
+                  <dt>Privacy</dt>
+                  <dd>{analysis.people_blurred} person region(s) blurred</dd>
+                </>
+              )}
               <dt>Prompts</dt>
               <dd>{Object.values(analysis.prompt_versions).join(", ")}</dd>
             </dl>

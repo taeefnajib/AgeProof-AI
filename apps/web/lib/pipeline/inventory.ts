@@ -13,6 +13,8 @@ export async function runInventory(imageDataUrl: string) {
     promptVersion: INVENTORY_PROMPT_VERSION,
     schemaName: "Inventory",
     schema: InventorySchema,
+    // Classification + a checklist of concepts: light reasoning is enough and saves ~5s.
+    reasoningEffort: "low",
     system: inventorySystemPrompt(),
     user: [textPart(inventoryUserPrompt()), imagePart(imageDataUrl)],
   });

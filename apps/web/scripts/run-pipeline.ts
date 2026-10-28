@@ -1,32 +1,13 @@
 /**
  * npm run pipeline -- [files...] — run the pipeline on photos (default: demo/*.jpg)
- * and write .cache/out/<name>.json plus <name>.overlay.png with every kept mask drawn.
+ * and write .cache/out/<name>.json, <name>.photo.jpg (as shown) and <name>.overlay.png.
  */
 import { REPO_ROOT } from "./env";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { analyzePhoto } from "../lib/pipeline/analyze";
-import { maskTransform } from "../lib/pipeline/mask";
-import { conceptColour } from "../lib/render/palette";
-import type { PhotoAnalysis } from "../lib/schema/analysis";
-
-function overlaySvg(a: PhotoAnalysis): string {
-  const shapes = a.regions
-    .filter((r) => r.concept !== "floor")
-    .map((r) => {
-      const c = conceptColour(r.concept);
-      return `<path d="${r.svg_path}" transform="${maskTransform(r.mask, r.box)}" fill="${c}" fill-opacity="0.45" stroke="${c}" stroke-width="0.5"/>
-<text x="${r.box.x1 + 4}" y="${r.box.y1 + 22}" font-family="Arial" font-size="20" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${r.id} ${r.concept} ${r.score.toFixed(2)}</text>`;
-    });
-  const floor = a.regions
-    .filter((r) => r.concept === "floor")
-    .map(
-      (r) =>
-        `<path d="${r.svg_path}" transform="${maskTransform(r.mask, r.box)}" fill="none" stroke="#ffd400" stroke-width="1.5" stroke-dasharray="4 3"/>`,
-    );
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${a.width}" height="${a.height}">${floor.join("")}${shapes.join("")}</svg>`;
-}
+import { regionOverlaySvg } from "../lib/render/overlay";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -47,8 +28,10 @@ async function main() {
       JSON.stringify({ ...rest, regions: rest.regions.map(({ mask: _m, svg_path: _p, ...r }) => r) }, null, 2),
     );
     const base = Buffer.from(a.image_data_url.split(",")[1], "base64");
+    // Exactly what the UI shows and the VLM sees (EXIF stripped, people blurred).
+    await writeFile(path.join(outDir, `${name}.photo.jpg`), base);
     await sharp(base)
-      .composite([{ input: Buffer.from(overlaySvg(a)) }])
+      .composite([{ input: Buffer.from(regionOverlaySvg(a.regions, a.width, a.height)) }])
       .png()
       .toFile(path.join(outDir, `${name}.overlay.png`));
     console.log(`room=${a.inventory.room_type} (${a.inventory.room_type_confidence}) quality=${a.inventory.photo_quality}`);
@@ -59,9 +42,18 @@ async function main() {
     for (const c of a.candidates) {
       console.log(`  ▸ ${c.rule_id} [${c.priority}/${c.confidence}] ${c.region_ids.join(",")} — ${c.measurement}`);
     }
+    console.log(`  findings (${a.findings_source}):`);
     for (const f of a.findings) {
-      console.log(`  ${f.id} ${f.title} (${f.region_ids.join(",") || "whole photo"})`);
+      console.log(`  ${f.id} [${f.priority}/${f.confidence}] ${f.title} (${f.region_ids.join(",") || "whole photo"}) ${f.rule_id ?? "VLM"}`);
+      console.log(`       ${f.explanation}
+       → ${f.suggestion}`);
     }
+    if (a.validation) {
+      const { rejected, ...v } = a.validation;
+      console.log(`  validation: ${JSON.stringify(v)}`);
+      for (const r of rejected) console.log(`  ✗ rejected ${r.rule_id} ${r.region_ids.join(",")}: ${r.reason}`);
+    }
+    if (a.explain_error) console.log(`  explain error: ${a.explain_error}`);
     console.log(`regions=${a.regions.length} cost=$${a.cost_usd} timings=${a.timings.map((t) => `${t.step}:${t.ms}ms`).join(" ")}`);
   }
 }

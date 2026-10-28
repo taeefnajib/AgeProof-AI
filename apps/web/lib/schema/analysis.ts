@@ -3,6 +3,7 @@ import { RuleCandidateSchema } from "./candidate";
 import { FindingSchema } from "./finding";
 import { InventorySchema } from "./inventory";
 import { RegionSchema } from "./region";
+import { ValidationStatsSchema } from "./validation";
 import { RoomTypeSchema } from "./vocabulary";
 
 export const LuminanceSchema = z.object({
@@ -14,7 +15,7 @@ export const LuminanceSchema = z.object({
 export type Luminance = z.infer<typeof LuminanceSchema>;
 
 export const StepTimingSchema = z.object({
-  step: z.enum(["preprocess", "inventory", "segment", "rules", "explain", "render"]),
+  step: z.enum(["preprocess", "inventory", "segment", "rules", "explain", "validate"]),
   ms: z.number(),
   detail: z.string().optional(),
   cached: z.boolean().optional(),
@@ -35,8 +36,9 @@ export const PhotoAnalysisSchema = z.object({
   sha256: z.string(),
   width: z.number().int(),
   height: z.number().int(),
-  /** Preprocessed JPEG (EXIF stripped, ≤1600px) as a data URL. */
+  /** Preprocessed JPEG (EXIF stripped, ≤1600px, people blurred) as a data URL. */
   image_data_url: z.string(),
+  people_blurred: z.number().int(),
   luminance: LuminanceSchema,
   inventory: InventorySchema,
   /** Room type used downstream: the user's override, else the inventory's guess. */
@@ -49,6 +51,9 @@ export const PhotoAnalysisSchema = z.object({
   findings: z.array(FindingSchema),
   /** "rules" = template wording from step 3 (explain not run or failed); "explain" = Muse Spark. */
   findings_source: z.enum(["rules", "explain"]),
+  /** Grounding validation stats; null when the explain step didn't run. */
+  validation: ValidationStatsSchema.nullable(),
+  explain_error: z.string().nullable(),
   concept_runs: z.array(ConceptRunSchema),
   timings: z.array(StepTimingSchema),
   prompt_versions: z.record(z.string(), z.string()),

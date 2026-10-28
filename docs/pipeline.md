@@ -5,7 +5,7 @@ photo ──► 0. Preprocess ──► 1. Inventory (Muse Spark) ──► 2. S
       ──► 3. Spatial rules ──► 4. Explain (Muse Spark) ──► 5. Validate & render
 ```
 
-Status: steps 0 to 3 are built. Steps 4 and 5 come next.
+Status: all steps are built. A full photo takes about 15–18s uncached and costs about $0.02–0.025.
 
 | Step | Code | What it does |
 |---|---|---|
@@ -13,6 +13,10 @@ Status: steps 0 to 3 are built. Steps 4 and 5 come next.
 | 1. Inventory | `lib/pipeline/inventory.ts`, `lib/prompts/inventory.ts` | Muse Spark returns JSON constrained by `InventorySchema`: whether the photo is a usable room photo, the room type, and which concepts from the fixed vocabulary appear. If the photo isn't usable, we stop and ask for a better one. |
 | 2. Segment | `lib/pipeline/segment.ts`, `lib/meta/sam.ts` | One SAM 3.1 call per inventory concept, plus `floor`, `door` and `person` every time, with up to 6 calls in parallel. Masks with confidence ≥ 0.5 are kept and given stable IDs `R1, R2…`. If `floor` matches nothing, it retries with the inventory's `floor_phrase` (e.g. "light blue carpet"), then `carpet`. Each region stores its box, its mask (RLE of the box-cropped raster), an SVG path, its area as a % of the image, and its score. |
 | 3. Spatial rules | `lib/pipeline/rules.ts`, `lib/pipeline/geometry.ts` | Pure, unit-tested functions. Masks are resampled onto a shared 4px grid so regions can be compared by overlap, adjacency (dilation) and box gaps. Each rule emits a candidate with region IDs, a numeric measurement and template wording. Thresholds live in `T`. |
+
+| Privacy | `lib/pipeline/privacy.ts` | Every `person` mask, padded by 1%, is blurred before the photo is displayed or sent to Muse Spark again. |
+| 4. Explain | `lib/pipeline/explain.ts`, `lib/prompts/explain.ts` | Muse Spark (`reasoning_effort: "low"`) sees the photo, the same photo with numbered region outlines, the region table and the rule candidates. It confirms or rejects each candidate and may add up to 3 observations, which **must cite region IDs** (or be `whole_image`). |
+| 5. Validate | `lib/pipeline/validate.ts` | Drops findings that cite unknown region IDs (the hallucination metric). Fixes scope, caps confidence (absence findings and VLM-only findings at medium, never above the rule's own), enforces the language rules (banned words or imperative suggestions fall back to template wording, or the finding is dropped), de-duplicates, restores candidates the model skipped, then sorts and numbers. If the explain call fails, template findings are shown instead, so the demo never breaks. |
 
 ### Rules
 

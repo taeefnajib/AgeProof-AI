@@ -1,11 +1,13 @@
 import type { StepTiming } from "@/lib/schema/analysis";
 
-/** Steps the pipeline currently runs, in order. Extend as rules/explain land. */
+/** Pipeline steps, in order. */
 export const PIPELINE_STEPS: { step: StepTiming["step"]; label: string; model?: string }[] = [
   { step: "preprocess", label: "Preprocess" },
   { step: "inventory", label: "Inventory", model: "Muse Spark" },
   { step: "segment", label: "Segment", model: "SAM 3.1" },
   { step: "rules", label: "Spatial rules" },
+  { step: "explain", label: "Explain", model: "Muse Spark" },
+  { step: "validate", label: "Grounding check" },
 ];
 
 function fmt(ms: number) {

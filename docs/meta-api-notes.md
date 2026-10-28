@@ -85,3 +85,14 @@ Also available but not used yet: box/point prompts (`<0f>1<|box;...|>`, `buildOb
 - [x] `c` comes back as a full float (e.g. `c=0.9452055096626282`) when `include_confidence: "true"` is set.
 - [x] **The mask raster is full resolution and matches the box.** Box `x1=560..x2=697` (inclusive) became parser bounds `[560, 698)`, 138 px wide, and the raster was also 138×278. So the mask→image scale is 1:1. We keep the general scaling code anyway.
 - [x] Latency: about 1.5–4s per SAM call on a 1600px image. With 6 calls in parallel, a whole photo takes about 4–5.5s. Inventory takes about 4.5–11s. **A full photo takes about 10–17s uncached and costs about $0.02–0.04.**
+
+## Reasoning effort (verified 29 Oct 2026)
+
+Muse Spark always reasons. Chat Completions takes a top-level `reasoning_effort`: `minimal | low | medium | high | xhigh | max`. `"none"` returns a 400. Reasoning tokens are billed as output.
+
+| Step | Default effort | `low` |
+|---|---|---|
+| inventory | ~5–8s, 800–1,500 out tokens | ~3–5s, 450–830 out tokens |
+| explain | 12–25s, 3,800–7,200 out tokens | 7–10s, 1,400–2,200 out tokens |
+
+Finding quality looked the same on the demo photos, so both steps use `low`. The effort level is part of the cache key.
