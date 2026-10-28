@@ -11,7 +11,24 @@ Status: steps 0 to 3 are built. Steps 4 and 5 come next.
 |---|---|---|
 | 0. Preprocess | `lib/pipeline/preprocess.ts` | Applies EXIF rotation, scales the longest side down to 1600px and re-encodes as JPEG, which drops all metadata including GPS. Computes SHA-256 for caching, plus luminance stats (mean luma, % of pixels below 50) for the lighting check. |
 | 1. Inventory | `lib/pipeline/inventory.ts`, `lib/prompts/inventory.ts` | Muse Spark returns JSON constrained by `InventorySchema`: whether the photo is a usable room photo, the room type, and which concepts from the fixed vocabulary appear. If the photo isn't usable, we stop and ask for a better one. |
-| 2. Segment | `lib/pipeline/segment.ts`, `lib/meta/sam.ts` | One SAM 3.1 call per inventory concept, plus `floor`, `door` and `person` every time, with up to 6 calls in parallel. Masks with confidence ≥ 0.5 are kept and given stable IDs `R1, R2…`. Each region stores its box, its mask (RLE of the box-cropped raster), an SVG path, its area as a % of the image, and its score. |
+| 2. Segment | `lib/pipeline/segment.ts`, `lib/meta/sam.ts` | One SAM 3.1 call per inventory concept, plus `floor`, `door` and `person` every time, with up to 6 calls in parallel. Masks with confidence ≥ 0.5 are kept and given stable IDs `R1, R2…`. If `floor` matches nothing, it retries with the inventory's `floor_phrase` (e.g. "light blue carpet"), then `carpet`. Each region stores its box, its mask (RLE of the box-cropped raster), an SVG path, its area as a % of the image, and its score. |
+| 3. Spatial rules | `lib/pipeline/rules.ts`, `lib/pipeline/geometry.ts` | Pure, unit-tested functions. Masks are resampled onto a shared 4px grid so regions can be compared by overlap, adjacency (dilation) and box gaps. Each rule emits a candidate with region IDs, a numeric measurement and template wording. Thresholds live in `T`. |
+
+### Rules
+
+| Rule | Fires when | Priority |
+|---|---|---|
+| `TRIP_RUG_ON_PATH` | rug, bath mat or floor mat lies on the floor (or touches it) | `discuss_soon` within 8% of the diagonal of a shower/bath, `worth_checking` near a door/toilet/bed, otherwise `minor` |
+| `TRIP_CORD_ON_FLOOR` | ≥ 30% of a cord is on or beside the floor | `worth_checking` |
+| `CLUTTER_FLOOR` | clutter/shoes cover ≥ 2% of the floor | `worth_checking` |
+| `NO_GRAB_BAR_TOILET` | no grab bar/handrail within 1.5 toilet widths | `discuss_soon`, confidence capped at medium |
+| `NO_GRAB_BAR_WET` | no grab bar/handrail within one fixture size of a shower or bath | `discuss_soon`, confidence capped at medium |
+| `STEP_THRESHOLD` | step/threshold near a door, shower or bath; stairs anywhere | `worth_checking` |
+| `NO_HANDRAIL_STAIRS` | stairs with no handrail within half a stair width | `discuss_soon`, confidence capped at medium |
+| `LOW_LIGHT` | mean luma < 75 or > 35% very dark pixels (whole photo) | `minor`, or `worth_checking` below 55 |
+| `HIGH_STORAGE` | shelf/high cupboard in the top quarter of the frame | `minor` |
+
+Rules about absence say "not visible in this photo", because a rail could be just out of frame. Without a floor mask, rules fall back to "lower half of the photo" and drop to low confidence.
 
 Design rule: **the LLM never invents locations.** SAM produces the regions, deterministic rules measure them, and the LLM only explains findings that cite real region IDs.
 
