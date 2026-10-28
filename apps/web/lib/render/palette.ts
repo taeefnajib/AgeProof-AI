@@ -9,3 +9,10 @@ export function conceptColour(concept: string): string {
   for (let i = 0; i < concept.length; i++) h = (h * 31 + concept.charCodeAt(i)) >>> 0;
   return RAW_COLOURS[h % RAW_COLOURS.length];
 }
+
+/** Priority colours: calm amber/orange/grey, never alarming red (CLAUDE.md §5). */
+export const PRIORITY_STYLE = {
+  discuss_soon: { colour: "#d9692b", label: "Discuss soon" },
+  worth_checking: { colour: "#d99a1e", label: "Worth checking" },
+  minor: { colour: "#8b8f8c", label: "Minor" },
+} as const;

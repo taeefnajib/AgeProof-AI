@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { maskAreaPx, maskTransform, rasterToRle, rleOnCount, rleToRaster } from "../mask";
+import { maskAreaPx, maskCentroid, maskTransform, rasterToRle, rleOnCount, rleToRaster } from "../mask";
 
 describe("mask RLE", () => {
   it("round-trips a raster", () => {
@@ -19,5 +19,13 @@ describe("mask RLE", () => {
     // Box is 20x10 px, so each cell covers 10x5 = 50 px.
     expect(maskAreaPx(mask, { x1: 0, y1: 0, x2: 20, y2: 10 })).toBe(150);
     expect(maskTransform(mask, { x1: 5, y1: 7, x2: 25, y2: 17 })).toBe("translate(5 7) scale(10 5)");
+  });
+});
+
+describe("maskCentroid", () => {
+  it("finds the centre of the on cells in image pixels", () => {
+    // 2×2 raster, only the bottom-right cell on; box 100..120 × 50..70 (10px cells).
+    const c = maskCentroid({ w: 2, h: 2, rle: [3, 1] }, { x1: 100, y1: 50, x2: 120, y2: 70 });
+    expect(c).toEqual({ x: 115, y: 65 });
   });
 });

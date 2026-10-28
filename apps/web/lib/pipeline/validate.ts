@@ -50,7 +50,8 @@ function fromCandidate(c: RuleCandidate): Omit<Finding, "id"> {
 
 /**
  * Step 5 (validation half): turn the model's output into grounded findings.
- * - drop any finding citing a region ID that doesn't exist, and log it
+ * - drop any finding citing a region ID that doesn't exist (or a model observation
+ *   pinned only to the floor), and log it
  * - fix scope/region consistency; cap confidence for absence findings and VLM-only findings
  * - enforce language rules (fall back to the rule's template wording, else drop)
  * - de-duplicate; restore rule candidates the model silently skipped
@@ -62,6 +63,7 @@ export function validateFindings(
   candidates: RuleCandidate[],
 ): { findings: Finding[]; stats: ValidationStats } {
   const known = new Set(regions.map((r) => r.id));
+  const conceptOf = new Map(regions.map((r) => [r.id, r.concept]));
   const byRule = new Map<string, RuleCandidate[]>();
   for (const c of candidates) byRule.set(c.rule_id, [...(byRule.get(c.rule_id) ?? []), c]);
   const usedCandidates = new Set<RuleCandidate>();
@@ -105,6 +107,15 @@ export function validateFindings(
       console.warn(`[validate] dropped ungrounded finding "${raw.title}" citing ${ids.join(",")}`);
       continue;
     }
+    const candidate = raw.rule_id ? findCandidate(raw.rule_id, ids) : undefined;
+    // The floor covers most of a photo: a model observation pinned only to the floor
+    // isn't located anywhere specific, so it counts as ungrounded.
+    const concepts = ids.map((id) => conceptOf.get(id));
+    if (!candidate && ids.length > 0 && concepts.every((c) => c === "floor")) {
+      stats.dropped_ungrounded++;
+      console.warn(`[validate] dropped floor-only observation "${raw.title}"`);
+      continue;
+    }
     let scope = raw.scope;
     if (ids.length === 0 && scope === "region") {
       // A region finding with no region: nothing to point at.
@@ -114,7 +125,6 @@ export function validateFindings(
     }
     if (ids.length > 0 && scope === "whole_image") scope = "region";
 
-    const candidate = raw.rule_id ? findCandidate(raw.rule_id, ids) : undefined;
     if (candidate) usedCandidates.add(candidate);
 
     let f: Omit<Finding, "id"> = {

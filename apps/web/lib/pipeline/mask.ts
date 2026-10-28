@@ -48,3 +48,25 @@ export function maskTransform(mask: Mask, box: Box): string {
   const sy = (box.y2 - box.y1) / mask.h;
   return `translate(${box.x1} ${box.y1}) scale(${sx} ${sy})`;
 }
+
+/** Centre of mass of a mask in image pixels (falls back to the box centre if empty). */
+export function maskCentroid(mask: Mask, box: Box): { x: number; y: number } {
+  const raster = rleToRaster(mask);
+  let sx = 0;
+  let sy = 0;
+  let n = 0;
+  for (let y = 0; y < mask.h; y++) {
+    for (let x = 0; x < mask.w; x++) {
+      if (raster[y * mask.w + x]) {
+        sx += x + 0.5;
+        sy += y + 0.5;
+        n++;
+      }
+    }
+  }
+  if (n === 0) return { x: (box.x1 + box.x2) / 2, y: (box.y1 + box.y2) / 2 };
+  return {
+    x: box.x1 + (sx / n) * ((box.x2 - box.x1) / mask.w),
+    y: box.y1 + (sy / n) * ((box.y2 - box.y1) / mask.h),
+  };
+}

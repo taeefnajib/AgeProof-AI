@@ -4,16 +4,29 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { loadResult } from "@/lib/client/resultStore";
-import { conceptColour } from "@/lib/render/palette";
+import { conceptColour, PRIORITY_STYLE } from "@/lib/render/palette";
 import type { PhotoAnalysis } from "@/lib/schema/analysis";
 import { Disclaimer } from "./Disclaimer";
+import { FindingList } from "./FindingList";
+import { FindingsOverlay } from "./FindingsOverlay";
 import { PipelineTimeline } from "./PipelineTimeline";
 import { RegionOverlay } from "./RegionOverlay";
+import { RoomChecklist } from "./RoomChecklist";
 
 const QUALITY_MESSAGES: Record<string, string> = {
   too_dark: "This photo looks too dark to screen. Please turn on the lights or open the curtains and try again.",
   too_blurry: "This photo looks blurry. Please hold the camera steady and try again.",
-  not_a_room: "This doesn't look like a photo of a room. Please upload a photo of a bathroom, bedroom or living room.",
+  not_a_room:
+    "This doesn't look like a photo of a room in a home. Please upload a photo of a bathroom, bedroom or living room.",
+};
+
+const ROOM_NAMES: Record<string, string> = {
+  bathroom: "Bathroom",
+  bedroom: "Bedroom",
+  living: "Living room",
+  kitchen: "Kitchen",
+  hallway: "Hallway",
+  other: "Room",
 };
 
 const noopSubscribe = () => () => {};
@@ -26,14 +39,15 @@ export function ResultView() {
     () => loadResultCached(id),
     () => undefined,
   );
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [activeFinding, setActiveFinding] = useState<string | null>(null);
+  const [selectedFinding, setSelectedFinding] = useState<string | null>(null);
+  const [showRaw, setShowRaw] = useState(false);
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
+  const [hiddenConcepts, setHiddenConcepts] = useState<Set<string>>(new Set());
 
   const byConcept = useMemo(() => {
     const groups = new Map<string, PhotoAnalysis["regions"]>();
-    for (const r of analysis?.regions ?? []) {
-      groups.set(r.concept, [...(groups.get(r.concept) ?? []), r]);
-    }
+    for (const r of analysis?.regions ?? []) groups.set(r.concept, [...(groups.get(r.concept) ?? []), r]);
     return [...groups.entries()];
   }, [analysis]);
 
@@ -53,9 +67,16 @@ export function ResultView() {
   }
 
   const qualityMessage = QUALITY_MESSAGES[analysis.inventory.photo_quality];
-  const visible = analysis.regions.filter((r) => !hidden.has(r.concept));
-  const toggle = (concept: string) =>
-    setHidden((prev) => {
+  const counts = (["discuss_soon", "worth_checking", "minor"] as const).map((p) => ({
+    p,
+    n: analysis.findings.filter((f) => f.priority === p).length,
+  }));
+  const select = (fid: string | null) => {
+    setSelectedFinding(fid);
+    if (fid) setShowRaw(false);
+  };
+  const toggleConcept = (concept: string) =>
+    setHiddenConcepts((prev) => {
       const next = new Set(prev);
       if (next.has(concept)) next.delete(concept);
       else next.add(concept);
@@ -67,16 +88,19 @@ export function ResultView() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium uppercase tracking-widest text-accent">Screening result</p>
-          <h1 className="font-display text-3xl capitalize tracking-tight">
-            {analysis.room_type === "living" ? "Living room" : analysis.room_type}
-            <span className="ml-3 align-middle text-base font-normal normal-case text-muted">
+          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
+            {ROOM_NAMES[analysis.room_type]}
+            <span className="ml-3 align-middle text-base font-normal text-muted">
               {analysis.room_type_source === "user"
                 ? "set by you"
                 : `detected · ${analysis.inventory.room_type_confidence} confidence`}
             </span>
           </h1>
         </div>
-        <Link href="/" className="no-print rounded-full border border-line bg-card px-4 py-2 text-sm hover:border-accent">
+        <Link
+          href="/"
+          className="no-print rounded-full border border-line bg-card px-4 py-2 text-sm hover:border-accent"
+        >
           Screen another photo
         </Link>
       </div>
@@ -91,102 +115,121 @@ export function ResultView() {
         </p>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <RegionOverlay
-          src={analysis.image_data_url}
-          width={analysis.width}
-          height={analysis.height}
-          regions={visible}
-          activeId={activeId}
-          onHover={setActiveId}
-        />
-
-        <aside className="space-y-4">
-          <div className="rounded-xl border border-line bg-card p-4">
-            <h2 className="font-display text-lg">Possible hazards</h2>
-            {analysis.findings.length === 0 ? (
-              <p className="mt-1 text-sm text-muted">
-                No hazards were flagged from what is visible in this photo. Items not visible have not
-                been checked.
-              </p>
-            ) : (
-              <ol className="mt-3 space-y-3">
-                {analysis.findings.map((f) => (
-                  <li
-                    key={f.id}
-                    onMouseEnter={() => setActiveId(f.region_ids[0] ?? null)}
-                    onMouseLeave={() => setActiveId(null)}
-                    className="text-sm"
-                  >
-                    <p className="font-medium">
-                      {f.id.slice(1)} · {f.title}
-                    </p>
-                    <p className="text-muted">{f.explanation}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {f.region_ids.join(", ") || "whole photo"} · {f.priority.replace("_", " ")} ·{" "}
-                      {f.confidence} confidence
-                    </p>
-                  </li>
-                ))}
-              </ol>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-3 lg:sticky lg:top-6 lg:self-start">
+          {showRaw ? (
+            <RegionOverlay
+              src={analysis.image_data_url}
+              width={analysis.width}
+              height={analysis.height}
+              regions={analysis.regions.filter((r) => !hiddenConcepts.has(r.concept))}
+              activeId={activeRegion}
+              onHover={setActiveRegion}
+            />
+          ) : (
+            <FindingsOverlay
+              src={analysis.image_data_url}
+              width={analysis.width}
+              height={analysis.height}
+              findings={analysis.findings}
+              regions={analysis.regions}
+              activeId={activeFinding ?? selectedFinding}
+              onActive={setActiveFinding}
+              onSelect={select}
+            />
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showRaw}
+              onClick={() => setShowRaw((v) => !v)}
+              className="no-print flex items-center gap-2 text-left"
+            >
+              <span
+                className={`relative inline-block h-5 w-9 shrink-0 rounded-full transition-colors ${
+                  showRaw ? "bg-accent" : "bg-line"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
+                    showRaw ? "left-[18px]" : "left-0.5"
+                  }`}
+                />
+              </span>
+              <span>
+                Show all detected objects{" "}
+                <span className="text-muted">({analysis.regions.length} regions from SAM 3.1)</span>
+              </span>
+            </button>
+            {!showRaw && (
+              <span className="flex flex-wrap gap-3 text-xs text-muted">
+                {counts
+                  .filter((c) => c.n > 0)
+                  .map((c) => (
+                    <span key={c.p} className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: PRIORITY_STYLE[c.p].colour }} />
+                      {c.n} {PRIORITY_STYLE[c.p].label.toLowerCase()}
+                    </span>
+                  ))}
+              </span>
             )}
           </div>
 
-          <div className="rounded-xl border border-line bg-card p-4">
-            <h2 className="font-display text-lg">Detected objects</h2>
-            <p className="mt-1 text-sm text-muted">
-              Raw regions from SAM 3.1. Hover to highlight; click a label to hide it. Hazard findings
-              are built on top of these.
-            </p>
-            <ul className="mt-3 space-y-1">
+          {showRaw && (
+            <ul className="flex flex-wrap gap-2 text-sm">
               {byConcept.map(([concept, regs]) => (
                 <li key={concept}>
                   <button
                     type="button"
-                    onClick={() => toggle(concept)}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-paper ${
-                      hidden.has(concept) ? "opacity-40" : ""
+                    onClick={() => toggleConcept(concept)}
+                    onMouseEnter={() => setActiveRegion(regs[0].id)}
+                    onMouseLeave={() => setActiveRegion(null)}
+                    className={`flex items-center gap-2 rounded-full border border-line bg-card px-3 py-1 ${
+                      hiddenConcepts.has(concept) ? "opacity-40" : ""
                     }`}
+                    title={regs.map((r) => `${r.id} score ${r.score} · ${r.area_pct}%`).join("\n")}
                   >
-                    <span className="h-3 w-3 rounded-sm" style={{ background: conceptColour(concept) }} />
-                    <span className="flex-1 capitalize">{concept}</span>
-                    <span className="flex gap-1">
-                      {regs.map((r) => (
-                        <span
-                          key={r.id}
-                          onMouseEnter={() => setActiveId(r.id)}
-                          onMouseLeave={() => setActiveId(null)}
-                          className={`rounded px-1.5 py-0.5 text-xs tabular-nums ${
-                            activeId === r.id ? "bg-ink text-white" : "bg-paper text-muted"
-                          }`}
-                          title={`score ${r.score} · ${r.area_pct}% of photo`}
-                        >
-                          {r.id}
-                        </span>
-                      ))}
-                    </span>
+                    <span className="h-2.5 w-2.5 rounded-sm" style={{ background: conceptColour(concept) }} />
+                    {concept}
+                    <span className="text-xs text-muted">{regs.map((r) => r.id).join(" ")}</span>
                   </button>
                 </li>
               ))}
-              {byConcept.length === 0 && <li className="text-sm text-muted">No objects detected.</li>}
             </ul>
-          </div>
+          )}
+        </div>
 
-          <details className="rounded-xl border border-line bg-card p-4 text-sm">
+        <aside className="space-y-5">
+          <section className="rounded-2xl border border-line bg-card p-5">
+            <h2 className="font-display text-xl">Possible hazards</h2>
+            <p className="mb-2 mt-1 text-sm text-muted">
+              Seen in this photo. Hover or tap a number to find it on the photo.
+            </p>
+            <FindingList
+              findings={analysis.findings}
+              activeId={activeFinding}
+              selectedId={selectedFinding}
+              onActive={setActiveFinding}
+              onSelect={select}
+            />
+          </section>
+
+          <section className="rounded-2xl border border-line bg-card p-5">
+            <h2 className="font-display text-xl">Also check in person</h2>
+            <p className="mb-3 mt-1 text-sm text-muted">
+              A photo can&apos;t show these. They&apos;re good questions for an occupational therapist.
+            </p>
+            <RoomChecklist roomType={analysis.room_type} />
+          </section>
+
+          <details className="rounded-2xl border border-line bg-card p-5 text-sm">
             <summary className="cursor-pointer font-medium">Under the hood</summary>
-            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-muted">
+            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-muted">
               <dt>Models</dt>
               <dd>{Object.values(analysis.models).join(", ")}</dd>
-              <dt>Concepts tried</dt>
-              <dd>
-                {analysis.concept_runs.map((r) => `${r.concept} (${r.kept}/${r.instances})`).join(", ")}
-              </dd>
-              <dt>Brightness</dt>
-              <dd>
-                mean {analysis.luminance.mean}/255 · {analysis.luminance.dark_pct}% dark pixels
-              </dd>
-              <dt>Cost</dt>
-              <dd>${analysis.cost_usd.toFixed(4)}</dd>
+              <dt>Concepts</dt>
+              <dd>{analysis.concept_runs.map((r) => `${r.concept} (${r.kept}/${r.instances})`).join(", ")}</dd>
               <dt>Rules</dt>
               <dd>
                 {analysis.candidates.map((c) => `${c.rule_id}: ${c.measurement}`).join("; ") || "none fired"}
@@ -194,19 +237,32 @@ export function ResultView() {
               <dt>Grounding</dt>
               <dd>
                 {analysis.validation
-                  ? `${analysis.validation.proposed} proposed by Muse Spark · ${analysis.validation.dropped_ungrounded} dropped (cited unknown regions) · ${analysis.validation.rejected.length} rule candidates rejected · ${analysis.validation.restored} restored`
+                  ? `${analysis.validation.proposed} proposed by Muse Spark · ${analysis.validation.dropped_ungrounded} dropped for citing unknown regions · ${analysis.validation.restored} restored`
                   : "explain step unavailable; showing rule wording"}
               </dd>
+              {analysis.validation?.rejected.map((r) => (
+                <div key={`${r.rule_id}-${r.region_ids.join()}`} className="contents">
+                  <dt>Rejected</dt>
+                  <dd>
+                    {r.rule_id} ({r.region_ids.join(", ")}): {r.reason}
+                  </dd>
+                </div>
+              ))}
               {analysis.people_blurred > 0 && (
                 <>
                   <dt>Privacy</dt>
                   <dd>{analysis.people_blurred} person region(s) blurred</dd>
                 </>
               )}
+              <dt>Brightness</dt>
+              <dd>
+                mean {analysis.luminance.mean}/255 · {analysis.luminance.dark_pct}% dark pixels
+              </dd>
+              <dt>Cost</dt>
+              <dd>${analysis.cost_usd.toFixed(4)}</dd>
               <dt>Prompts</dt>
               <dd>{Object.values(analysis.prompt_versions).join(", ")}</dd>
             </dl>
-            {analysis.inventory.notes && <p className="mt-2 italic text-muted">{analysis.inventory.notes}</p>}
           </details>
         </aside>
       </div>

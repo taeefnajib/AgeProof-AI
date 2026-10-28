@@ -53,6 +53,16 @@ describe("validateFindings", () => {
     expect(stats.dropped_ungrounded).toBe(1);
   });
 
+  it("drops model observations pinned only to the floor", () => {
+    const { findings, stats } = validateFindings(
+      { findings: [f({ region_ids: ["R1"], title: "Clutter by the sink" })], rejected: [] },
+      regions,
+      [],
+    );
+    expect(findings).toHaveLength(0);
+    expect(stats.dropped_ungrounded).toBe(1);
+  });
+
   it("caps absence findings at medium confidence even if the model says high", () => {
     const { findings } = validateFindings(
       {
