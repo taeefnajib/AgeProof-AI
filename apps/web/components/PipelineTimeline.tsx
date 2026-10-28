@@ -5,6 +5,7 @@ export const PIPELINE_STEPS: { step: StepTiming["step"]; label: string; model?: 
   { step: "preprocess", label: "Preprocess" },
   { step: "inventory", label: "Inventory", model: "Muse Spark" },
   { step: "segment", label: "Segment", model: "SAM 3.1" },
+  { step: "rules", label: "Spatial rules" },
 ];
 
 function fmt(ms: number) {

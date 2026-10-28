@@ -3,13 +3,14 @@ import { SAM_MODEL } from "../meta/client";
 import { INVENTORY_PROMPT_VERSION } from "../prompts/inventory";
 import type { PhotoAnalysis, StepTiming } from "../schema/analysis";
 import { ALWAYS_SEGMENT, type RoomType } from "../schema/vocabulary";
+import { candidatesToFindings } from "./findings";
 import { runInventory } from "./inventory";
 import { preprocess } from "./preprocess";
+import { runRules } from "./rules";
 import { runSegment } from "./segment";
 
 /**
- * Runs the pipeline for one photo. Day 2 scope: preprocess → inventory → segment.
- * Rules, explain and validation are added in later steps.
+ * Runs the pipeline for one photo: preprocess → inventory → segment → rules.
  */
 export async function analyzePhoto(
   input: Buffer,
@@ -44,6 +45,7 @@ export async function analyzePhoto(
     width: pre.width,
     height: pre.height,
     concepts,
+    floorPhrase: inv.data.floor_phrase,
   });
   record({
     step: "segment",
@@ -51,6 +53,19 @@ export async function analyzePhoto(
     detail: `${concepts.length} concepts → ${seg.regions.length} regions`,
     cached: seg.runs.every((r) => r.cached),
   });
+
+  const roomType = opts.roomType ?? inv.data.room_type;
+  t = Date.now();
+  const candidates = usable
+    ? runRules({
+        width: pre.width,
+        height: pre.height,
+        luminance: pre.luminance,
+        roomType,
+        regions: seg.regions,
+      })
+    : [];
+  record({ step: "rules", ms: Date.now() - t, detail: `${candidates.length} candidates` });
 
   return {
     id: randomUUID(),
@@ -60,9 +75,12 @@ export async function analyzePhoto(
     image_data_url: pre.dataUrl,
     luminance: pre.luminance,
     inventory: inv.data,
-    room_type: opts.roomType ?? inv.data.room_type,
+    room_type: roomType,
     room_type_source: opts.roomType ? "user" : "auto",
     regions: seg.regions,
+    candidates,
+    findings: candidatesToFindings(candidates),
+    findings_source: "rules",
     concept_runs: seg.runs,
     timings,
     prompt_versions: { inventory: INVENTORY_PROMPT_VERSION },

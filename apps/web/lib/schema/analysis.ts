@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { RuleCandidateSchema } from "./candidate";
+import { FindingSchema } from "./finding";
 import { InventorySchema } from "./inventory";
 import { RegionSchema } from "./region";
 import { RoomTypeSchema } from "./vocabulary";
@@ -41,6 +43,12 @@ export const PhotoAnalysisSchema = z.object({
   room_type: RoomTypeSchema,
   room_type_source: z.enum(["auto", "user"]),
   regions: z.array(RegionSchema),
+  /** Step 3 output: deterministic rule candidates. */
+  candidates: z.array(RuleCandidateSchema),
+  /** Final, grounded findings shown to the user. */
+  findings: z.array(FindingSchema),
+  /** "rules" = template wording from step 3 (explain not run or failed); "explain" = Muse Spark. */
+  findings_source: z.enum(["rules", "explain"]),
   concept_runs: z.array(ConceptRunSchema),
   timings: z.array(StepTimingSchema),
   prompt_versions: z.record(z.string(), z.string()),

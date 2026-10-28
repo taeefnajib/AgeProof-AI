@@ -1,5 +1,5 @@
 /**
- * npm run pipeline -- [files...] — run the Day 2 pipeline on photos (default: demo/*.jpg)
+ * npm run pipeline -- [files...] — run the pipeline on photos (default: demo/*.jpg)
  * and write .cache/out/<name>.json plus <name>.overlay.png with every kept mask drawn.
  */
 import { REPO_ROOT } from "./env";
@@ -55,6 +55,12 @@ async function main() {
     console.log(`concepts: ${a.inventory.concepts.join(", ")}`);
     for (const r of a.concept_runs) {
       console.log(`  ${r.concept.padEnd(18)} ${r.kept}/${r.instances} kept ${r.cached ? "(cached)" : `${r.ms}ms`}`);
+    }
+    for (const c of a.candidates) {
+      console.log(`  ▸ ${c.rule_id} [${c.priority}/${c.confidence}] ${c.region_ids.join(",")} — ${c.measurement}`);
+    }
+    for (const f of a.findings) {
+      console.log(`  ${f.id} ${f.title} (${f.region_ids.join(",") || "whole photo"})`);
     }
     console.log(`regions=${a.regions.length} cost=$${a.cost_usd} timings=${a.timings.map((t) => `${t.step}:${t.ms}ms`).join(" ")}`);
   }

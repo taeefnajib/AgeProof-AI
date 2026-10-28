@@ -10,6 +10,7 @@ describe("InventorySchema", () => {
       room_type: "bathroom",
       room_type_confidence: "high",
       concepts: ["toilet", "bath mat"],
+      floor_phrase: "white tiled floor",
       notes: "",
     };
     expect(InventorySchema.safeParse(ok).success).toBe(true);

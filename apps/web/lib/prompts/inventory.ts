@@ -1,6 +1,6 @@
 import { CONCEPTS, ROOM_TYPES } from "../schema/vocabulary";
 
-export const INVENTORY_PROMPT_VERSION = "inventory-v2";
+export const INVENTORY_PROMPT_VERSION = "inventory-v3";
 
 export function inventorySystemPrompt(): string {
   return `You help screen photos of rooms in an older person's home for possible fall and access hazards.
@@ -21,6 +21,8 @@ Return JSON with:
   Include a concept when you can see it or are fairly sure it is there. Leave it out when it is absent.
   Use "clutter on floor" for loose items lying on the floor. Use "high cupboard" only for cupboards above head height.
   Only include "grab bar" for a rail fixed to a wall for support, not a towel rail.
+- floor_phrase: a 2-3 word noun phrase naming the visible floor surface with its colour, such as
+  "grey carpet", "white tiled floor" or "light wooden floor". Use "floor" if no floor is visible.
 - notes: one short sentence on anything that made this hard to judge, or "".`;
 }
 

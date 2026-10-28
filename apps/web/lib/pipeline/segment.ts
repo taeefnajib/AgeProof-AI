@@ -5,6 +5,8 @@ import { maskAreaPx } from "./mask";
 /** Keep masks at or above this SAM confidence (tune in eval). */
 export const MIN_SCORE = 0.5;
 const CONCURRENCY = 6;
+/** Generic prompts tried after the inventory's floor phrase when "floor" finds nothing. */
+const FLOOR_FALLBACKS = ["carpet"];
 
 type SegmentFn = (opts: {
   imageDataUrl: string;
@@ -64,25 +66,44 @@ export async function runSegment(opts: {
   width: number;
   height: number;
   concepts: string[];
+  /** Inventory's description of the floor ("grey carpet"), tried if "floor" finds nothing. */
+  floorPhrase?: string;
 }): Promise<{ regions: Region[]; runs: ConceptRun[]; cost_usd: number }> {
   const segment = segmenter();
-  const results = await mapLimit(opts.concepts, CONCURRENCY, async (concept) => {
+  const run = async (concept: string, prompt = concept) => {
     try {
-      return { concept, res: await segment({ ...opts, concept }) };
+      return { concept, prompt, res: await segment({ ...opts, concept: prompt }) };
     } catch (e) {
       // One failed concept shouldn't sink the whole photo.
-      console.error(`[segment] "${concept}" failed:`, (e as Error).message);
-      return { concept, res: null };
+      console.error(`[segment] "${prompt}" failed:`, (e as Error).message);
+      return { concept, prompt, res: null };
     }
-  });
+  };
+  const results = await mapLimit(opts.concepts, CONCURRENCY, (c) => run(c));
+
+  // Carpet often isn't matched by plain "floor", but a described surface ("grey carpet")
+  // usually is. The floor mask matters to most rules, so retry with matches labelled "floor".
+  const floor = results.find((r) => r.concept === "floor");
+  if (floor && !floor.res?.instances.some((i) => i.score >= MIN_SCORE)) {
+    const phrase = opts.floorPhrase?.trim().toLowerCase();
+    const prompts = [...new Set([phrase, ...FLOOR_FALLBACKS])].filter(
+      (p): p is string => !!p && p !== "floor",
+    );
+    for (const prompt of prompts) {
+      const extra = await run("floor", prompt);
+      results.push(extra);
+      if (extra.res?.instances.some((i) => i.score >= MIN_SCORE)) break;
+    }
+  }
 
   const imageArea = opts.width * opts.height;
   const regions: Region[] = [];
   const runs: ConceptRun[] = [];
   let cost_usd = 0;
-  for (const { concept, res } of results) {
+  for (const { concept, prompt, res } of results) {
+    const label = prompt === concept ? concept : `${prompt} → ${concept}`;
     if (!res) {
-      runs.push({ concept, instances: 0, kept: 0, ms: 0, cached: false });
+      runs.push({ concept: label, instances: 0, kept: 0, ms: 0, cached: false });
       continue;
     }
     cost_usd += res.cost_usd;
@@ -101,7 +122,7 @@ export async function runSegment(opts: {
       });
     }
     runs.push({
-      concept,
+      concept: label,
       instances: res.instances.length,
       kept: kept.length,
       ms: res.ms,

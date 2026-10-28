@@ -5,7 +5,7 @@ photo ──► 0. Preprocess ──► 1. Inventory (Muse Spark) ──► 2. S
       ──► 3. Spatial rules ──► 4. Explain (Muse Spark) ──► 5. Validate & render
 ```
 
-Status: steps 0 to 2 are built (Day 2). Steps 3 to 5 come next.
+Status: steps 0 to 3 are built. Steps 4 and 5 come next.
 
 | Step | Code | What it does |
 |---|---|---|

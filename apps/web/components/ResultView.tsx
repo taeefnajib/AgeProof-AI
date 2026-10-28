@@ -103,6 +103,36 @@ export function ResultView() {
 
         <aside className="space-y-4">
           <div className="rounded-xl border border-line bg-card p-4">
+            <h2 className="font-display text-lg">Possible hazards</h2>
+            {analysis.findings.length === 0 ? (
+              <p className="mt-1 text-sm text-muted">
+                No hazards were flagged from what is visible in this photo. Items not visible have not
+                been checked.
+              </p>
+            ) : (
+              <ol className="mt-3 space-y-3">
+                {analysis.findings.map((f) => (
+                  <li
+                    key={f.id}
+                    onMouseEnter={() => setActiveId(f.region_ids[0] ?? null)}
+                    onMouseLeave={() => setActiveId(null)}
+                    className="text-sm"
+                  >
+                    <p className="font-medium">
+                      {f.id.slice(1)} · {f.title}
+                    </p>
+                    <p className="text-muted">{f.explanation}</p>
+                    <p className="mt-1 text-xs text-muted">
+                      {f.region_ids.join(", ") || "whole photo"} · {f.priority.replace("_", " ")} ·{" "}
+                      {f.confidence} confidence
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-line bg-card p-4">
             <h2 className="font-display text-lg">Detected objects</h2>
             <p className="mt-1 text-sm text-muted">
               Raw regions from SAM 3.1. Hover to highlight; click a label to hide it. Hazard findings
@@ -157,6 +187,10 @@ export function ResultView() {
               </dd>
               <dt>Cost</dt>
               <dd>${analysis.cost_usd.toFixed(4)}</dd>
+              <dt>Rules</dt>
+              <dd>
+                {analysis.candidates.map((c) => `${c.rule_id}: ${c.measurement}`).join("; ") || "none fired"}
+              </dd>
               <dt>Prompts</dt>
               <dd>{Object.values(analysis.prompt_versions).join(", ")}</dd>
             </dl>

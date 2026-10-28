@@ -12,6 +12,9 @@ export const InventorySchema = z.object({
   concepts: z
     .array(ConceptSchema)
     .describe("concepts from the vocabulary that plausibly appear in the photo"),
+  floor_phrase: z
+    .string()
+    .describe("2-3 word noun phrase naming the floor surface with its colour, e.g. 'grey carpet'"),
   notes: z.string().describe("one short sentence on anything that made this hard to judge, or empty"),
 });
 export type Inventory = z.infer<typeof InventorySchema>;
