@@ -11,6 +11,8 @@ export const RULE_IDS = [
   "NO_HANDRAIL_STAIRS",
   "LOW_LIGHT",
   "HIGH_STORAGE",
+  "WET_FLOOR",
+  "UNEVEN_FLOOR",
   "WALL_MOULD",
   "LOOSE_BLIND",
 ] as const;

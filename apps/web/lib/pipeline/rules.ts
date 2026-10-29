@@ -177,7 +177,9 @@ function tripRugOnPath(s: Scene): RuleCandidate[] {
 
 function tripCordOnFloor(s: Scene): RuleCandidate[] {
   const out: RuleCandidate[] = [];
-  for (const cord of s.of("electrical cord")) {
+  for (const cord of s.of("electrical cord", "garden hose")) {
+    const hose = cord.concept === "garden hose";
+    const noun = hose ? "hose" : "cord";
     const share = s.onFloorShare(cord);
     const onFloor = share === null ? s.lowerHalf(cord) : share >= T.cordOnFloorMin;
     if (!onFloor) continue;
@@ -188,14 +190,16 @@ function tripCordOnFloor(s: Scene): RuleCandidate[] {
       scope: "region",
       measurement:
         share === null
-          ? `cord ${cord.id} is in the lower half of the photo (no floor detected)`
-          : `${pct(share)} of cord ${cord.id} is on or beside the floor`,
+          ? `${noun} ${cord.id} is in the lower half of the photo (no floor detected)`
+          : `${pct(share)} of ${noun} ${cord.id} is on or beside the floor`,
       metrics: { on_floor: share ?? -1, area_pct: cord.area_pct },
       confidence: share === null ? "low" : "medium",
       priority: "worth_checking",
-      title: "Cord on or near the floor",
-      explanation: "A cord running across the floor may catch a foot or a walking aid.",
-      suggestion: "Options for moving or covering the cord may be worth discussing with an occupational therapist.",
+      title: hose ? "Hose lying across the floor" : "Cord on or near the floor",
+      explanation: `A ${noun} running across the floor may catch a foot or a walking aid.`,
+      suggestion: hose
+        ? "Ways to store the hose off the walking area may be worth discussing with an occupational therapist."
+        : "Options for moving or covering the cord may be worth discussing with an occupational therapist.",
     });
   }
   return out;
@@ -379,6 +383,58 @@ function highStorage(s: Scene): RuleCandidate[] {
   ];
 }
 
+/** Floor-level hazards found directly by SAM: they count when they lie on (or beside) the floor. */
+function onFloor(s: Scene, r: Region): boolean {
+  const share = s.onFloorShare(r);
+  return share === null ? s.lowerHalf(r) : share >= 0.5;
+}
+
+function wetFloor(s: Scene): RuleCandidate[] {
+  const wet = s.of("wet floor").filter((r) => onFloor(s, r));
+  // SAM rarely outlines water; then it's a whole-photo finding, like mould.
+  const seen = s.input.inventoryConcepts?.includes("wet floor") ?? false;
+  if (wet.length === 0 && !seen) return [];
+  const located = wet.length > 0;
+  return [
+    {
+      rule_id: "WET_FLOOR",
+      category: "trip",
+      region_ids: wet.map((r) => r.id),
+      scope: located ? "region" : "whole_image",
+      measurement: located
+        ? wet.map((r) => `wet patch ${r.id} covers ${r.area_pct}% of the photo`).join("; ")
+        : "inventory saw a wet floor; no patch could be outlined",
+      metrics: { patches: wet.length, area_pct: wet.reduce((a, r) => a + r.area_pct, 0) },
+      confidence: located ? "medium" : "low",
+      priority: "discuss_soon",
+      title: located ? "Wet patch on the floor in this photo" : "Floor looks wet in this photo",
+      explanation: "The floor looks wet here. Wet tiles and paving can be slippery underfoot.",
+      suggestion:
+        "Whether this floor gets slippery when wet, and what may help, may be worth discussing with an occupational therapist.",
+    },
+  ];
+}
+
+function unevenFloor(s: Scene): RuleCandidate[] {
+  const cracks = s.of("cracked floor tile").filter((r) => onFloor(s, r));
+  if (cracks.length === 0) return [];
+  return [
+    {
+      rule_id: "UNEVEN_FLOOR",
+      category: "trip",
+      region_ids: cracks.map((r) => r.id),
+      scope: "region",
+      measurement: cracks.map((r) => `cracked tile ${r.id} covers ${r.area_pct}% of the photo`).join("; "),
+      metrics: { patches: cracks.length },
+      confidence: "medium",
+      priority: "worth_checking",
+      title: "Cracked or uneven floor tiles",
+      explanation: "Cracked or lifting tiles can leave raised edges that may catch a foot.",
+      suggestion: "Whether the floor surface is even may be worth discussing with an occupational therapist.",
+    },
+  ];
+}
+
 function wallMould(s: Scene): RuleCandidate[] {
   const patches = s.of("mould on wall");
   const seen = s.input.inventoryConcepts?.includes("mould on wall") ?? false;
@@ -463,6 +519,8 @@ export const RULES: Record<RuleCandidate["rule_id"], (s: Scene) => RuleCandidate
   NO_HANDRAIL_STAIRS: noHandrailStairs,
   LOW_LIGHT: lowLight,
   HIGH_STORAGE: highStorage,
+  WET_FLOOR: wetFloor,
+  UNEVEN_FLOOR: unevenFloor,
   WALL_MOULD: wallMould,
   LOOSE_BLIND: looseBlind,
 };

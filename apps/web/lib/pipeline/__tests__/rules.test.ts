@@ -167,6 +167,26 @@ describe("worn shoes", () => {
   });
 });
 
+describe("outdoor floor hazards", () => {
+  it("treats a hose on the floor like a cord", () => {
+    const [c] = runRules(scene([FLOOR, rect("R2", "garden hose", 500, 800, 900, 950)])).filter(
+      (x) => x.rule_id === "TRIP_CORD_ON_FLOOR",
+    );
+    expect(c.title).toMatch(/hose/i);
+  });
+
+  it("flags wet patches and cracked tiles on the floor, not on the wall", () => {
+    const ids = ruleIds(
+      scene([FLOOR, rect("R2", "wet floor", 700, 800, 900, 900), rect("R3", "cracked floor tile", 300, 1000, 450, 1100)]),
+    );
+    expect(ids).toContain("WET_FLOOR");
+    expect(ids).toContain("UNEVEN_FLOOR");
+    expect(ruleIds(scene([FLOOR, rect("R2", "wet floor", 700, 50, 900, 150)]))).not.toContain("WET_FLOOR");
+    const [c] = runRules(scene([FLOOR], { inventoryConcepts: ["wet floor"] })).filter((x) => x.rule_id === "WET_FLOOR");
+    expect(c.scope).toBe("whole_image");
+  });
+});
+
 describe("WALL_MOULD and LOOSE_BLIND", () => {
   it("points at outlined mould patches", () => {
     const [c] = runRules(scene([rect("R2", "mould on wall", 100, 100, 300, 250)])).filter(

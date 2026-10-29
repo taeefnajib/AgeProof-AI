@@ -44,6 +44,14 @@ export const ROOM_CHECKLISTS: Record<RoomType, string[]> = {
     "Are there handrails where the floor level changes?",
     "Is the path to the front door clear of furniture and clutter?",
   ],
+  outdoor: [
+    "Is the step or track at the door easy to see and step over?",
+    "Does the floor get slippery when wet or covered in leaves?",
+    "Is there a sturdy rail or something firm to hold along the edge?",
+    "Is there a place to put the hose away after watering?",
+    "Is the area lit at night, from the door to where people sit?",
+    "Are chairs outside steady, with arms to help when standing up?",
+  ],
   other: ["Are walkways clear of clutter and cords?", "Is the room well lit day and night?"],
 };
 

@@ -13,6 +13,9 @@ export const CONCEPTS = [
   "threshold",
   "clutter on floor",
   "shoes on floor",
+  "garden hose",
+  "wet floor",
+  "cracked floor tile",
   // Bathroom
   "toilet",
   "shower",
@@ -55,6 +58,6 @@ export type SegmentLabel = Concept | "door";
 /** Always segmented, whatever the inventory says. */
 export const ALWAYS_SEGMENT: readonly SegmentLabel[] = ["floor", "door", "person"];
 
-export const ROOM_TYPES = ["bathroom", "bedroom", "living", "kitchen", "hallway", "other"] as const;
+export const ROOM_TYPES = ["bathroom", "bedroom", "living", "kitchen", "hallway", "outdoor", "other"] as const;
 export const RoomTypeSchema = z.enum(ROOM_TYPES);
 export type RoomType = z.infer<typeof RoomTypeSchema>;

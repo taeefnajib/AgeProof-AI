@@ -13,6 +13,8 @@ const CONCURRENCY = 6;
 const SAM_PROMPTS: Partial<Record<string, string[]>> = {
   floor: ["floor", "carpet"],
   "loose window blind": ["loose window blind", "window blind"],
+  "wet floor": ["puddle", "wet floor"],
+  "cracked floor tile": ["cracked tile", "broken tile"],
   "mould on wall": ["stain on wall", "mould"],
 };
 

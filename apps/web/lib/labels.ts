@@ -7,6 +7,7 @@ export const ROOM_NAMES: Record<RoomType, string> = {
   living: "Living room",
   kitchen: "Kitchen",
   hallway: "Hallway",
+  outdoor: "Balcony or patio",
   other: "Room",
 };
 

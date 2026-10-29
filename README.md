@@ -1,6 +1,6 @@
 # AgeProof AI
 
-Turns ordinary photos of a bathroom, bedroom or living room into a home-safety **screening** for older people. You get highlighted regions on the photo, a plain-language explanation of each possible hazard, and a report to bring to an occupational therapist.
+Turns ordinary photos of a bathroom, bedroom, living room or balcony into a home-safety **screening** for older people. You get highlighted regions on the photo, a plain-language explanation of each possible hazard, and a report to bring to an occupational therapist.
 
 > *AgeProof AI highlights possible hazards visible in photos. It cannot confirm whether a home is safe and does not replace an assessment by an occupational therapist or other qualified professional. Items not visible in the photos have not been checked.*
 
@@ -19,7 +19,7 @@ The language model never invents locations. SAM 3.1 finds the regions, unit-test
 
 What makes it grounded:
 - **SAM 3.1** segments only the concepts Muse Spark's inventory says are present.
-- **11 deterministic spatial rules** (unit-tested) measure masks on a shared grid: overlap with the floor, distance to doors, toilets and showers, and whether a rail is absent nearby.
+- **13 deterministic spatial rules** (unit-tested) measure masks on a shared grid: overlap with the floor, distance to doors, toilets and showers, and whether a rail is absent nearby.
 - **Muse Spark** confirms or rejects each rule finding and may add observations, but every finding must cite a real region ID. A validator drops any that don't, logs them as a hallucination metric, caps confidence for "not visible" findings, and enforces the responsible-language rules.
 - People are blurred before the photo is shown or sent to the VLM.
 
