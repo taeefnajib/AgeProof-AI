@@ -15,11 +15,11 @@ photo ──► Preprocess ──► Inventory (Muse Spark) ──► Segment (S
 
 The language model never invents locations. SAM 3.1 finds the regions, unit-tested rules measure them, and Muse Spark only explains findings that cite real region IDs. See [docs/pipeline.md](docs/pipeline.md).
 
-**Status (Day 5, MVP end to end):** upload a photo and in about 15–18 seconds you get numbered, colour-coded hazard regions on the photo, each with a plain-language explanation and something to discuss with an OT. There's also a room checklist of things a photo can't show, and a toggle to reveal every object SAM 3.1 detected. Each photo costs about $0.02. The OT report page, demo mode and eval numbers are next.
+**Status (Day 5, MVP end to end):** upload a photo and in about 15–18 seconds you get numbered, colour-coded hazard regions on the photo, each with a plain-language explanation and something to discuss with an OT. There's also a room checklist of things a photo can't show, and a toggle to reveal every object SAM 3.1 detected. **Generate OT report** opens a printable report that downloads as a PDF (built in the browser) or goes to your mail app as an attachment. Each photo costs about $0.02–0.06. Demo mode and eval numbers are next.
 
 What makes it grounded:
 - **SAM 3.1** segments only the concepts Muse Spark's inventory says are present.
-- **9 deterministic spatial rules** (unit-tested) measure masks on a shared grid: overlap with the floor, distance to doors, toilets and showers, and whether a rail is absent nearby.
+- **11 deterministic spatial rules** (unit-tested) measure masks on a shared grid: overlap with the floor, distance to doors, toilets and showers, and whether a rail is absent nearby.
 - **Muse Spark** confirms or rejects each rule finding and may add observations, but every finding must cite a real region ID. A validator drops any that don't, logs them as a hallucination metric, caps confidence for "not visible" findings, and enforces the responsible-language rules.
 - People are blurred before the photo is shown or sent to the VLM.
 

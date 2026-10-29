@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -19,9 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <header className="no-print border-b border-line bg-paper/80 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <Link href="/" className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent font-display text-lg text-white">
-                A
-              </span>
+              <Logo />
               <span className="font-display text-xl tracking-tight">AgeProof AI</span>
             </Link>
             <span className="text-sm text-muted">Screening aid · not an assessment</span>

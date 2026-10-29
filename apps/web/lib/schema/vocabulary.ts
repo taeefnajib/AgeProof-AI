@@ -29,6 +29,9 @@ export const CONCEPTS = [
   "shelf",
   "high cupboard",
   "low drawer",
+  // Walls & windows (presence judged by Muse Spark; SAM localises)
+  "mould on wall",
+  "loose window blind",
   // Lighting & support
   "lamp",
   "light switch",

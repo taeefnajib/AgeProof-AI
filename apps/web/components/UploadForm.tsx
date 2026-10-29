@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { analyzeOnServer } from "@/lib/client/analyzeClient";
 import { downscaleImage } from "@/lib/client/resize";
 import { saveResult } from "@/lib/client/resultStore";
@@ -33,6 +33,23 @@ export function UploadForm() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+
+  // Next keeps this page's state alive (hidden) while the result page is shown, so
+  // coming back would still show the last photo mid-analysis. Reset when it's hidden.
+  useEffect(() => {
+    const input = inputRef.current;
+    return () => {
+      setPreview((url) => {
+        if (url) URL.revokeObjectURL(url);
+        return null;
+      });
+      setTimings([]);
+      setRunning(false);
+      setError(null);
+      setDragging(false);
+      if (input) input.value = "";
+    };
+  }, []);
 
   const run = useCallback(
     async (blob: Blob) => {

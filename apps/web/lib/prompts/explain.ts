@@ -2,7 +2,7 @@ import type { RegionRow } from "../pipeline/regionTable";
 import type { Luminance } from "../schema/analysis";
 import type { RuleCandidate } from "../schema/candidate";
 
-export const EXPLAIN_PROMPT_VERSION = "explain-v3";
+export const EXPLAIN_PROMPT_VERSION = "explain-v4";
 
 export function explainSystemPrompt(): string {
   return `You help older people and their families prepare for a home visit by an occupational therapist (OT).
@@ -21,6 +21,8 @@ Your tasks:
    use region_ids: [] and scope: "whole_image". Never refer to a region ID that is not in the table.
    Never describe the location of something that has no region.
    Only report possible hazards or barriers. Don't list things that already look helpful.
+   Shoes someone is wearing are never a hazard. Possible mould, damp or heavy dirt on walls, and window
+   blinds that look loose or damaged, are worth reporting.
 
 Writing rules (strict):
 - Never use the words "safe", "unsafe", "compliant", "passes", or give any score.

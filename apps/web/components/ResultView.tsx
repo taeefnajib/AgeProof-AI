@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { loadResult } from "@/lib/client/resultStore";
+import { useMemo, useState } from "react";
+import { useStoredResult } from "@/lib/client/useStoredResult";
+import { ROOM_NAMES } from "@/lib/labels";
 import { conceptColour, PRIORITY_STYLE } from "@/lib/render/palette";
 import type { PhotoAnalysis } from "@/lib/schema/analysis";
 import { Disclaimer } from "./Disclaimer";
@@ -20,25 +21,9 @@ const QUALITY_MESSAGES: Record<string, string> = {
     "This doesn't look like a photo of a room in a home. Please upload a photo of a bathroom, bedroom or living room.",
 };
 
-const ROOM_NAMES: Record<string, string> = {
-  bathroom: "Bathroom",
-  bedroom: "Bedroom",
-  living: "Living room",
-  kitchen: "Kitchen",
-  hallway: "Hallway",
-  other: "Room",
-};
-
-const noopSubscribe = () => () => {};
-
 export function ResultView() {
   const { id } = useParams<{ id: string }>();
-  // sessionStorage is client-only; read it without a hydration mismatch.
-  const analysis = useSyncExternalStore(
-    noopSubscribe,
-    () => loadResultCached(id),
-    () => undefined,
-  );
+  const analysis = useStoredResult(id);
   const [activeFinding, setActiveFinding] = useState<string | null>(null);
   const [selectedFinding, setSelectedFinding] = useState<string | null>(null);
   const [showRaw, setShowRaw] = useState(false);
@@ -97,12 +82,22 @@ export function ResultView() {
             </span>
           </h1>
         </div>
-        <Link
-          href="/"
-          className="no-print rounded-full border border-line bg-card px-4 py-2 text-sm hover:border-accent"
-        >
-          Screen another photo
-        </Link>
+        <div className="no-print flex flex-wrap gap-2">
+          <Link
+            href="/"
+            className="rounded-full border border-line bg-card px-4 py-2 text-sm hover:border-accent"
+          >
+            Screen another photo
+          </Link>
+          {!qualityMessage && (
+            <Link
+              href={`/report/${analysis.id}`}
+              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+            >
+              Generate OT report
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="mt-5 rounded-xl border border-line bg-card p-4">
@@ -270,11 +265,4 @@ export function ResultView() {
       <Disclaimer className="mt-8" />
     </div>
   );
-}
-
-// useSyncExternalStore needs a stable snapshot per id; parse sessionStorage once.
-const snapshots = new Map<string, PhotoAnalysis | null>();
-function loadResultCached(id: string): PhotoAnalysis | null {
-  if (!snapshots.has(id)) snapshots.set(id, loadResult(id));
-  return snapshots.get(id) ?? null;
 }

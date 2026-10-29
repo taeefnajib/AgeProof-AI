@@ -5,8 +5,16 @@ import { maskAreaPx } from "./mask";
 /** Keep masks at or above this SAM confidence (tune in eval). */
 export const MIN_SCORE = 0.5;
 const CONCURRENCY = 6;
-/** Generic prompts tried after the inventory's floor phrase when "floor" finds nothing. */
-const FLOOR_FALLBACKS = ["carpet"];
+/**
+ * SAM prompts per concept, tried in order until one finds a confident mask.
+ * SAM can't judge condition ("loose", "mouldy"): Muse Spark's inventory decides
+ * whether the concept is present, SAM only localises it.
+ */
+const SAM_PROMPTS: Partial<Record<string, string[]>> = {
+  floor: ["floor", "carpet"],
+  "loose window blind": ["loose window blind", "window blind"],
+  "mould on wall": ["stain on wall", "mould"],
+};
 
 type SegmentFn = (opts: {
   imageDataUrl: string;
@@ -79,22 +87,25 @@ export async function runSegment(opts: {
       return { concept, prompt, res: null };
     }
   };
-  const results = await mapLimit(opts.concepts, CONCURRENCY, (c) => run(c));
+  const promptsFor = (concept: string) => {
+    const own = SAM_PROMPTS[concept] ?? [concept];
+    // Carpet often isn't matched by plain "floor", but a described surface ("grey carpet")
+    // usually is, so the inventory's floor phrase goes straight after "floor".
+    const phrase = concept === "floor" ? opts.floorPhrase?.trim().toLowerCase() : undefined;
+    return [...new Set(phrase ? [own[0], phrase, ...own.slice(1)] : own)];
+  };
+  const hit = (r: { res: SegmentResult | null }) => !!r.res?.instances.some((i) => i.score >= MIN_SCORE);
+  const results = await mapLimit(opts.concepts, CONCURRENCY, (c) => run(c, promptsFor(c)[0]));
 
-  // Carpet often isn't matched by plain "floor", but a described surface ("grey carpet")
-  // usually is. The floor mask matters to most rules, so retry with matches labelled "floor".
-  const floor = results.find((r) => r.concept === "floor");
-  if (floor && !floor.res?.instances.some((i) => i.score >= MIN_SCORE)) {
-    const phrase = opts.floorPhrase?.trim().toLowerCase();
-    const prompts = [...new Set([phrase, ...FLOOR_FALLBACKS])].filter(
-      (p): p is string => !!p && p !== "floor",
-    );
-    for (const prompt of prompts) {
-      const extra = await run("floor", prompt);
+  // Fallback prompts for concepts that found nothing; matches keep the concept's label.
+  const misses = results.filter((r) => !hit(r) && promptsFor(r.concept).length > 1);
+  await mapLimit(misses, CONCURRENCY, async ({ concept }) => {
+    for (const prompt of promptsFor(concept).slice(1)) {
+      const extra = await run(concept, prompt);
       results.push(extra);
-      if (extra.res?.instances.some((i) => i.score >= MIN_SCORE)) break;
+      if (hit(extra)) break;
     }
-  }
+  });
 
   const imageArea = opts.width * opts.height;
   const regions: Region[] = [];

@@ -39,6 +39,10 @@ export const T = {
   /** Storage counts as high if its top is in the upper 25% and it sits in the upper 60%. */
   highStorageTopFrac: 0.25,
   highStorageBottomFrac: 0.6,
+  /** Shoes this much on or beside a person mask are being worn, not left on the floor. */
+  wornShoeOverlap: 0.4,
+  /** Ring around a person mask for the worn-shoe test. */
+  personRingFrac: 0.01,
 };
 
 export type RuleInput = {
@@ -47,6 +51,8 @@ export type RuleInput = {
   luminance: Luminance;
   roomType: RoomType;
   regions: Region[];
+  /** Concepts Muse Spark's inventory saw, for conditions SAM can't localise (e.g. mould). */
+  inventoryConcepts?: readonly string[];
 };
 
 const RUG_LIKE = ["rug", "bath mat", "floor mat"];
@@ -373,6 +379,76 @@ function highStorage(s: Scene): RuleCandidate[] {
   ];
 }
 
+function wallMould(s: Scene): RuleCandidate[] {
+  const patches = s.of("mould on wall");
+  const seen = s.input.inventoryConcepts?.includes("mould on wall") ?? false;
+  if (patches.length === 0 && !seen) return [];
+  // SAM often can't outline mould. Then the finding is about the whole photo, never a guessed spot.
+  const located = patches.length > 0;
+  return [
+    {
+      rule_id: "WALL_MOULD",
+      category: "upkeep",
+      region_ids: patches.map((r) => r.id),
+      scope: located ? "region" : "whole_image",
+      measurement: located
+        ? patches.map((r) => `patch ${r.id} covers ${r.area_pct}% of the photo`).join("; ")
+        : "inventory saw possible mould; no patch could be outlined",
+      metrics: { patches: patches.length, area_pct: patches.reduce((a, r) => a + r.area_pct, 0) },
+      confidence: "low",
+      priority: "worth_checking",
+      title: located ? "Possible mould or marks on the wall" : "Possible mould or marks visible in this photo",
+      explanation:
+        "Dark patches on a wall may be mould, damp or dirt. Mould and damp can make the air in a room less healthy.",
+      suggestion:
+        "Whether this is mould or damp, and what may be causing it, may be worth discussing with an occupational therapist or a building professional.",
+    },
+  ];
+}
+
+function looseBlind(s: Scene): RuleCandidate[] {
+  // Only segmented when the inventory judged a blind loose or damaged; SAM finds the blind itself.
+  const blinds = s.of("loose window blind");
+  const seen = s.input.inventoryConcepts?.includes("loose window blind") ?? false;
+  if (blinds.length === 0 && !seen) return [];
+  const located = blinds.length > 0;
+  return [
+    {
+      rule_id: "LOOSE_BLIND",
+      category: "upkeep",
+      region_ids: blinds.map((r) => r.id),
+      scope: located ? "region" : "whole_image",
+      measurement: located
+        ? `inventory saw a loose or damaged blind; SAM outlined ${blinds.map((r) => r.id).join(", ")}`
+        : "inventory saw a loose or damaged blind; it could not be outlined",
+      metrics: { blinds: blinds.length },
+      confidence: "low",
+      priority: "worth_checking",
+      title: "Window blind that may be loose or damaged",
+      explanation:
+        "A blind that hangs loose or crooked may come down if pulled or leaned on. Loose cords can catch hands or walking aids.",
+      suggestion:
+        "Whether the blind is secure and easy to open and close may be worth discussing with an occupational therapist.",
+    },
+  ];
+}
+
+/**
+ * Shoes on someone's feet aren't clutter. Drops "shoes on floor" regions that sit
+ * mostly on or right beside a person mask, so neither the rules nor Muse Spark see them.
+ */
+export function removeWornShoes(input: RuleInput): Region[] {
+  const s = new Scene(input);
+  const people = s.of("person");
+  if (people.length === 0) return input.regions;
+  const near = dilate(s.grid, union(s.grid, people.map((p) => s.cells(p))), s.cellsFor(T.personRingFrac));
+  return input.regions.filter((r) => {
+    if (r.concept !== "shoes on floor") return true;
+    const own = s.cells(r);
+    return intersectCount(own, near) / Math.max(1, count(own)) < T.wornShoeOverlap;
+  });
+}
+
 function capital(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -387,6 +463,8 @@ export const RULES: Record<RuleCandidate["rule_id"], (s: Scene) => RuleCandidate
   NO_HANDRAIL_STAIRS: noHandrailStairs,
   LOW_LIGHT: lowLight,
   HIGH_STORAGE: highStorage,
+  WALL_MOULD: wallMould,
+  LOOSE_BLIND: looseBlind,
 };
 
 /** Step 3: run every rule. Pure and deterministic: same regions in, same candidates out. */

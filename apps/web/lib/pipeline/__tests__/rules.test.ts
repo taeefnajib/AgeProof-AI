@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { boxGap, dilate, makeGrid, regionCells, count } from "../geometry";
-import { runRules } from "../rules";
+import { removeWornShoes, runRules } from "../rules";
 import { rect, scene } from "./fixtures";
 
 const ruleIds = (input: Parameters<typeof runRules>[0]) => runRules(input).map((c) => c.rule_id);
@@ -147,6 +147,50 @@ describe("whole-photo rules", () => {
   it("flags storage in the upper quarter only", () => {
     expect(ruleIds(scene([rect("R2", "high cupboard", 100, 50, 500, 400)]))).toContain("HIGH_STORAGE");
     expect(ruleIds(scene([rect("R2", "shelf", 100, 500, 500, 900)]))).not.toContain("HIGH_STORAGE");
+  });
+});
+
+describe("worn shoes", () => {
+  it("drops shoes on a person's feet but keeps shoes left on the floor", () => {
+    const input = scene([
+      FLOOR,
+      rect("R2", "person", 400, 200, 600, 1050),
+      rect("R3", "shoes on floor", 420, 1000, 580, 1060),
+      rect("R4", "shoes on floor", 1200, 1000, 1350, 1060),
+    ]);
+    expect(removeWornShoes(input).map((r) => r.id)).toEqual(["R1", "R2", "R4"]);
+  });
+
+  it("keeps all shoes when nobody is in the photo", () => {
+    const input = scene([FLOOR, rect("R2", "shoes on floor", 420, 1000, 580, 1060)]);
+    expect(removeWornShoes(input)).toHaveLength(2);
+  });
+});
+
+describe("WALL_MOULD and LOOSE_BLIND", () => {
+  it("points at outlined mould patches", () => {
+    const [c] = runRules(scene([rect("R2", "mould on wall", 100, 100, 300, 250)])).filter(
+      (x) => x.rule_id === "WALL_MOULD",
+    );
+    expect(c.region_ids).toEqual(["R2"]);
+    expect(c.scope).toBe("region");
+    expect(c.category).toBe("upkeep");
+  });
+
+  it("falls back to whole photo when the inventory saw mould SAM couldn't outline", () => {
+    const [c] = runRules(scene([FLOOR], { inventoryConcepts: ["mould on wall"] })).filter(
+      (x) => x.rule_id === "WALL_MOULD",
+    );
+    expect(c.region_ids).toEqual([]);
+    expect(c.scope).toBe("whole_image");
+  });
+
+  it("flags a loose blind only when one was segmented or seen", () => {
+    expect(ruleIds(scene([FLOOR]))).not.toContain("LOOSE_BLIND");
+    const [c] = runRules(scene([rect("R2", "loose window blind", 0, 0, 300, 600)])).filter(
+      (x) => x.rule_id === "LOOSE_BLIND",
+    );
+    expect(c.region_ids).toEqual(["R2"]);
   });
 });
 

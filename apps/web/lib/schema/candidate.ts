@@ -11,6 +11,8 @@ export const RULE_IDS = [
   "NO_HANDRAIL_STAIRS",
   "LOW_LIGHT",
   "HIGH_STORAGE",
+  "WALL_MOULD",
+  "LOOSE_BLIND",
 ] as const;
 export const RuleIdSchema = z.enum(RULE_IDS);
 export type RuleId = z.infer<typeof RuleIdSchema>;

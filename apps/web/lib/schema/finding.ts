@@ -4,7 +4,7 @@ import { z } from "zod";
 export const FindingSchema = z.object({
   id: z.string(),
   rule_id: z.string().nullable(),
-  category: z.enum(["trip", "bathroom", "lighting", "reach", "mobility", "other"]),
+  category: z.enum(["trip", "bathroom", "lighting", "reach", "mobility", "upkeep", "other"]),
   title: z.string().max(60),
   explanation: z.string(),
   suggestion: z.string(),

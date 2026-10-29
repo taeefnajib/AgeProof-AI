@@ -1,6 +1,6 @@
 import { CONCEPTS, ROOM_TYPES } from "../schema/vocabulary";
 
-export const INVENTORY_PROMPT_VERSION = "inventory-v3";
+export const INVENTORY_PROMPT_VERSION = "inventory-v4";
 
 export function inventorySystemPrompt(): string {
   return `You help screen photos of rooms in an older person's home for possible fall and access hazards.
@@ -20,6 +20,10 @@ Return JSON with:
   ${CONCEPTS.join(", ")}.
   Include a concept when you can see it or are fairly sure it is there. Leave it out when it is absent.
   Use "clutter on floor" for loose items lying on the floor. Use "high cupboard" only for cupboards above head height.
+  Use "shoes on floor" only for shoes left lying on the floor, never for shoes someone is wearing.
+  Use "mould on wall" for dark or discoloured patches on walls or ceilings that look like mould, damp or heavy dirt.
+  Use "loose window blind" only for a blind that hangs crooked, sags, is broken or pulled off its fittings, or has
+  long cords hanging loose. Leave it out for blinds that hang straight and look intact.
   Only include "grab bar" for a rail fixed to a wall for support, not a towel rail.
 - floor_phrase: a 2-3 word noun phrase naming the visible floor surface with its colour, such as
   "grey carpet", "white tiled floor" or "light wooden floor". Use "floor" if no floor is visible.

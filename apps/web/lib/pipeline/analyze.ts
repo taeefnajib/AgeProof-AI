@@ -10,7 +10,7 @@ import { candidatesToFindings } from "./findings";
 import { runInventory } from "./inventory";
 import { preprocess } from "./preprocess";
 import { blurPeople, renderRegionOverlay, toDataUrl } from "./privacy";
-import { runRules } from "./rules";
+import { removeWornShoes, runRules } from "./rules";
 import { runSegment } from "./segment";
 import { validateFindings } from "./validate";
 
@@ -62,19 +62,20 @@ export async function analyzePhoto(
 
   const roomType = opts.roomType ?? inv.data.room_type;
   t = Date.now();
-  const candidates = usable
-    ? runRules({
-        width: pre.width,
-        height: pre.height,
-        luminance: pre.luminance,
-        roomType,
-        regions: seg.regions,
-      })
-    : [];
+  const ruleInput = {
+    width: pre.width,
+    height: pre.height,
+    luminance: pre.luminance,
+    roomType,
+    regions: seg.regions,
+    inventoryConcepts: inv.data.concepts,
+  };
+  const regions = removeWornShoes(ruleInput);
+  const candidates = usable ? runRules({ ...ruleInput, regions }) : [];
   record({ step: "rules", ms: Date.now() - t, detail: `${candidates.length} candidates` });
 
   // Privacy: blur people before anything is displayed or sent to the VLM again.
-  const privacy = await blurPeople(pre.jpeg, seg.regions, pre.width, pre.height);
+  const privacy = await blurPeople(pre.jpeg, regions, pre.width, pre.height);
   const photoDataUrl = privacy.blurred ? toDataUrl(privacy.jpeg) : pre.dataUrl;
 
   // Step 4 + 5: explain, then validate. Any explain failure falls back to rule wording
@@ -87,12 +88,12 @@ export async function analyzePhoto(
   if (usable) {
     t = Date.now();
     try {
-      const overlay = await renderRegionOverlay(privacy.jpeg, seg.regions, pre.width, pre.height);
+      const overlay = await renderRegionOverlay(privacy.jpeg, regions, pre.width, pre.height);
       const exp = await runExplain({
         photoDataUrl,
         overlayDataUrl: toDataUrl(overlay),
         roomType,
-        regions: seg.regions,
+        regions: regions,
         candidates,
         luminance: pre.luminance,
         width: pre.width,
@@ -106,7 +107,7 @@ export async function analyzePhoto(
         cached: exp.cached,
       });
       t = Date.now();
-      const v = validateFindings(exp.data, seg.regions, candidates);
+      const v = validateFindings(exp.data, regions, candidates);
       findings = v.findings;
       validation = v.stats;
       findingsSource = "explain";
@@ -133,7 +134,7 @@ export async function analyzePhoto(
     inventory: inv.data,
     room_type: roomType,
     room_type_source: opts.roomType ? "user" : "auto",
-    regions: seg.regions,
+    regions: regions,
     candidates,
     findings,
     findings_source: findingsSource,

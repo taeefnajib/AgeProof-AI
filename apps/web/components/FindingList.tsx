@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { CATEGORY_LABEL } from "@/lib/labels";
 import { PRIORITY_STYLE } from "@/lib/render/palette";
 import type { Finding } from "@/lib/schema/finding";
-
-const CATEGORY_LABEL: Record<Finding["category"], string> = {
-  trip: "Trips",
-  bathroom: "Bathroom",
-  lighting: "Lighting",
-  reach: "Reach",
-  mobility: "Getting around",
-  other: "Other",
-};
 
 export function FindingList({
   findings,
