@@ -32,7 +32,7 @@ npm install
 cp .env.example apps/web/.env.local   # then add MODEL_API_KEY
 npm run dev                           # http://localhost:3000
 npm test                              # vitest
-npm run smoke:meta                    # one Muse Spark + one SAM 3.1 call on demo/bathroom.jpg
+npm run smoke:meta                    # one Muse Spark + one SAM 3.1 call on demo/bathroom-1.jpg
 npm run pipeline -w apps/web          # run the pipeline on demo/*.jpg → apps/web/.cache/out/
 ```
 

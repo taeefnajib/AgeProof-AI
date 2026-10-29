@@ -1,5 +1,5 @@
 /**
- * npm run pipeline -- [files...] — run the pipeline on photos (default: demo/*.jpg)
+ * npm run pipeline -- [files...] — run the pipeline on photos (default: demo/*.jpg and *.png)
  * and write .cache/out/<name>.json, <name>.photo.jpg (as shown) and <name>.overlay.png.
  */
 import { REPO_ROOT } from "./env";
@@ -14,7 +14,7 @@ async function main() {
   const demoDir = path.join(REPO_ROOT, "demo");
   const files = args.length
     ? args.map((f) => path.resolve(f))
-    : (await readdir(demoDir)).filter((f) => f.endsWith(".jpg")).map((f) => path.join(demoDir, f));
+    : (await readdir(demoDir)).filter((f) => /\.(jpe?g|png)$/i.test(f)).map((f) => path.join(demoDir, f));
   const outDir = path.resolve(import.meta.dirname, "..", ".cache", "out");
   await mkdir(outDir, { recursive: true });
 

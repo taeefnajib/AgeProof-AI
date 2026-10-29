@@ -1,5 +1,5 @@
 /**
- * npm run smoke:meta — one Muse Spark call and one SAM 3.1 call on demo/bathroom.jpg.
+ * npm run smoke:meta — one Muse Spark call and one SAM 3.1 call on demo/bathroom-1.jpg.
  * Bypasses the cache on purpose and prints raw shapes so docs/meta-api-notes.md stays honest.
  */
 import { REPO_ROOT } from "./env";
@@ -15,7 +15,7 @@ async function* replay<T>(events: T[]) {
 
 async function main() {
   const client = metaClient();
-  const img = await preprocess(await readFile(path.join(REPO_ROOT, "demo", "bathroom.jpg")));
+  const img = await preprocess(await readFile(path.join(REPO_ROOT, "demo", "bathroom-1.jpg")));
   console.log(`image ${img.width}x${img.height}, ${img.jpeg.length} bytes, luma`, img.luminance);
 
   // 1. Model access

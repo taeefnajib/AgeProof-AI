@@ -165,8 +165,8 @@ Also show a **pipeline timeline** in the UI (Inventory ✓ 2.1s → Segment ✓ 
 npm install
 npm run dev            # local app
 npm test               # vitest (rules + schemas)
-npm run smoke:meta     # one Muse Spark + one SAM 3.1 call on demo/bathroom.jpg
-npm run pipeline -w apps/web [files...]  # run pipeline on demo/*.jpg → apps/web/.cache/out/*.json + overlay PNGs
+npm run smoke:meta     # one Muse Spark + one SAM 3.1 call on demo/bathroom-1.jpg
+npm run pipeline -w apps/web [files...]  # run pipeline on demo/*.jpg + *.png → apps/web/.cache/out/*.json + overlay PNGs
 npm run typecheck -w apps/web
 npm run demo:build     # regenerate cached demo outputs (Day 8, not yet implemented)
 python eval/score.py   # run evaluation
