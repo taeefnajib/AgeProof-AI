@@ -1,0 +1,99 @@
+{
+ "image": "eval/images/bedroom-fairfax.jpg",
+ "sha256": "92a2946f38a76f46264fb744c353d5d45ad2d9ad58fcd109c52b17e52cfb4b33",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 23260,
+  "cost_usd": 0.03945,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "region_ids": [
+    "R10",
+    "R2"
+   ],
+   "measurement": "rug R10 covers 1.92% of the photo, 0px from bed R2"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "category": "trip",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Rug on a likely walking route",
+   "regions": [
+    {
+     "concept": "rug",
+     "box": [
+      0.099,
+      0.806,
+      0.276,
+      0.995
+     ]
+    },
+    {
+     "concept": "bed",
+     "box": [
+      0.254,
+      0,
+      0.957,
+      0.998
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": null,
+   "category": "mobility",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "High bed with long curtains around it",
+   "regions": [
+    {
+     "concept": "bed",
+     "box": [
+      0.309,
+      0.603,
+      0.788,
+      1
+     ]
+    },
+    {
+     "concept": "bed",
+     "box": [
+      0.254,
+      0,
+      0.957,
+      0.998
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,60 @@
+{
+ "image": "eval/images/bathroom-bethune.jpg",
+ "sha256": "8380a89d7ef528f5ce63483714655ee0607504561a66942e00d18b7fa688b23c",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 16666,
+  "cost_usd": 0.03071,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [
+  {
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "no grab rail detected within 968px of toilet R2"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside the toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.137,
+      0.471,
+      0.674,
+      0.927
+     ]
+    }
+   ]
+  }
+ ]
+}

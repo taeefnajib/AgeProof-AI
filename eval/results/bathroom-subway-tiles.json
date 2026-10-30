@@ -1,0 +1,72 @@
+{
+ "image": "eval/images/bathroom-subway-tiles.jpg",
+ "sha256": "ba5b9821e2acbc965b47266dd842d18e9b8358ea5e89cbb3af0dbaa7f7709f12",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 19504,
+  "cost_usd": 0.04636,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 3,
+  "dropped_ungrounded": 1,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "High-sided bathtub to step over",
+   "regions": [
+    {
+     "concept": "bathtub",
+     "box": [
+      0.109,
+      0.593,
+      0.636,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": null,
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Toilet with no support rail visible",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.845,
+      0.615,
+      1,
+      1
+     ]
+    }
+   ]
+  }
+ ]
+}

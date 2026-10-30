@@ -1,0 +1,22 @@
+{
+ "image": "eval/images/negative-ikea-display.jpg",
+ "sha256": "37a27fd37a4b495d9b607b6890dde10e0e8239fecab3cf02e868d19d4d1145e3",
+ "room_type": "other",
+ "photo_check": {
+  "quality": "not_a_room",
+  "source": "model",
+  "detail": "Photo shows a retail store aisle, not a home room."
+ },
+ "latency": {
+  "ms": 6652,
+  "cost_usd": 0.0082,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": null,
+ "candidates": [],
+ "findings": []
+}

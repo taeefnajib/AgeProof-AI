@@ -1,0 +1,80 @@
+{
+ "image": "eval/images/toilet-futuro.jpg",
+ "sha256": "959db0f90b840dded860f6b2adfbe55b0dfe7e198e6012acdb3fb746bf91a210",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Very small brightly coloured pod-like space made home context unclear."
+ },
+ "latency": {
+  "ms": 18332,
+  "cost_usd": 0.03384,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "no grab rail detected within 843px of toilet R2"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside the toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.532,
+      0.445,
+      1,
+      0.889
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": null,
+   "category": "upkeep",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Cracked toilet seat lid",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.532,
+      0.445,
+      1,
+      0.889
+     ]
+    }
+   ]
+  }
+ ]
+}

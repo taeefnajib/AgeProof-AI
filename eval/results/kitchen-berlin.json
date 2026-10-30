@@ -1,0 +1,31 @@
+{
+ "image": "eval/images/kitchen-berlin.jpg",
+ "sha256": "629298dfdf06c77280c70511cc8d74a3796f76ec532fb81ead9cd4a6f67eb6c7",
+ "room_type": "living",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Open-plan kitchen-living area makes room type ambiguous."
+ },
+ "latency": {
+  "ms": 18245,
+  "cost_usd": 0.0372,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 1,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 0
+ },
+ "candidates": [],
+ "findings": []
+}

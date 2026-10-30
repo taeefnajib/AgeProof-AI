@@ -1,0 +1,70 @@
+{
+ "image": "eval/images/kitchen-standen.jpg",
+ "sha256": "45b85689372ac7202889d828d4ada25dde21b1b924a46a283537be8721859713",
+ "room_type": "kitchen",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 20627,
+  "cost_usd": 0.04033,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "HIGH_STORAGE",
+   "region_ids": [
+    "R4"
+   ],
+   "measurement": "shelf R4 top at 22% of photo height"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "lighting",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "whole_image",
+   "title": "Parts of the kitchen look dim",
+   "regions": []
+  },
+  {
+   "id": "F2",
+   "rule_id": "HIGH_STORAGE",
+   "category": "reach",
+   "priority": "minor",
+   "confidence": "low",
+   "scope": "region",
+   "title": "High shelf with pots may be hard to reach",
+   "regions": [
+    {
+     "concept": "shelf",
+     "box": [
+      0.759,
+      0.217,
+      1,
+      0.315
+     ]
+    }
+   ]
+  }
+ ]
+}

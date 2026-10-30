@@ -1,0 +1,22 @@
+{
+ "image": "eval/images/toilet-hk.jpg",
+ "sha256": "852e658e02496e0aa86d420c8aa0a28dffc3ff21d40aa7cd4d8d3ea21607db3e",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "not_a_room",
+  "source": "model",
+  "detail": "Appears to be a public or commercial toilet rather than a home bathroom."
+ },
+ "latency": {
+  "ms": 8508,
+  "cost_usd": 0.00942,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": null,
+ "candidates": [],
+ "findings": []
+}

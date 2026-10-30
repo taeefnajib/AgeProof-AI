@@ -1,0 +1,31 @@
+{
+ "image": "demo/bedroom-1.jpg",
+ "sha256": "084b3bffe374b89d9199314ca1a44260e1cedcaea0b597655bcd4b88d431fcbe",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 3697,
+  "cost_usd": 0.00934,
+  "measured_live": false
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 0,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 0
+ },
+ "candidates": [],
+ "findings": []
+}

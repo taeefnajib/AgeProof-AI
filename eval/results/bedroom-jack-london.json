@@ -1,0 +1,80 @@
+{
+ "image": "eval/images/bedroom-jack-london.jpg",
+ "sha256": "7d5e64ddf68c3289f773014364f3571e2c81383d60229a6ba287c4a2211291f3",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Room function is ambiguous between bedroom and living area."
+ },
+ "latency": {
+  "ms": 21196,
+  "cost_usd": 0.04396,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "region_ids": [
+    "R5"
+   ],
+   "measurement": "rug R5 covers 7.59% of the photo, not next to a door or fixture"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "trip",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Shoe on floor in walking area",
+   "regions": [
+    {
+     "concept": "shoes on floor",
+     "box": [
+      0.973,
+      0.703,
+      1,
+      0.78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "category": "trip",
+   "priority": "minor",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Woven mat on bedroom floor",
+   "regions": [
+    {
+     "concept": "rug",
+     "box": [
+      0.24,
+      0.829,
+      1,
+      1
+     ]
+    }
+   ]
+  }
+ ]
+}

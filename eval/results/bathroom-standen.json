@@ -1,0 +1,60 @@
+{
+ "image": "eval/images/bathroom-standen.jpg",
+ "sha256": "08bb8a0688a71635b86f150ee46f72740f6472642700f803e5b40b13e128f84c",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 18527,
+  "cost_usd": 0.03908,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 1,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [
+  {
+   "rule_id": "NO_GRAB_BAR_WET",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "no grab rail detected near bathtub R2"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_WET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible near the bathtub",
+   "regions": [
+    {
+     "concept": "bathtub",
+     "box": [
+      0.353,
+      0.553,
+      0.612,
+      0.805
+     ]
+    }
+   ]
+  }
+ ]
+}

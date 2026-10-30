@@ -1,0 +1,107 @@
+{
+ "image": "eval/images/bathroom-historic.jpg",
+ "sha256": "7e085def9a0fbf7798455e541474c5034e685df4e53a30aee69b3a6318173590",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 10236,
+  "cost_usd": 0.01559,
+  "measured_live": false
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 3,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 1,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "region_ids": [
+    "R2",
+    "R6"
+   ],
+   "measurement": "rug R2 covers 2.2% of the photo, 2px from vanity R6"
+  },
+  {
+   "rule_id": "NO_GRAB_BAR_WET",
+   "region_ids": [
+    "R3",
+    "R4"
+   ],
+   "measurement": "no grab rail detected near shower R3, bathtub R4"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_WET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible near shower or bath",
+   "regions": [
+    {
+     "concept": "shower",
+     "box": [
+      0,
+      0.068,
+      0.246,
+      0.637
+     ]
+    },
+    {
+     "concept": "bathtub",
+     "box": [
+      0.102,
+      0.412,
+      0.352,
+      0.556
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "category": "trip",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Rug on a likely walking route",
+   "regions": [
+    {
+     "concept": "rug",
+     "box": [
+      0.383,
+      0.501,
+      0.597,
+      0.648
+     ]
+    },
+    {
+     "concept": "vanity",
+     "box": [
+      0.483,
+      0.285,
+      0.648,
+      0.499
+     ]
+    }
+   ]
+  }
+ ]
+}

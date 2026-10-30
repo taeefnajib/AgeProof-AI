@@ -1,0 +1,87 @@
+{
+ "image": "eval/images/stairs-lyme-park.jpg",
+ "sha256": "ce520f128f12a0413b40a716ee677ebe3ce138f98a9e6ee3c47ae3fe7475ebb8",
+ "room_type": "hallway",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Walls are badly peeling and damp-stained, making surface condition hard to judge."
+ },
+ "latency": {
+  "ms": 20179,
+  "cost_usd": 0.04094,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "STEP_THRESHOLD",
+   "region_ids": [
+    "R3"
+   ],
+   "measurement": "stairs R3 detected"
+  },
+  {
+   "rule_id": "WALL_MOULD",
+   "region_ids": [
+    "R5"
+   ],
+   "measurement": "patch R5 covers 59.65% of the photo"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "STEP_THRESHOLD",
+   "category": "mobility",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Steps in the stairway",
+   "regions": [
+    {
+     "concept": "stairs",
+     "box": [
+      0.616,
+      0.876,
+      0.904,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "WALL_MOULD",
+   "category": "upkeep",
+   "priority": "worth_checking",
+   "confidence": "low",
+   "scope": "region",
+   "title": "Possible mould or damp on the wall",
+   "regions": [
+    {
+     "concept": "mould on wall",
+     "box": [
+      0,
+      0,
+      0.896,
+      1
+     ]
+    }
+   ]
+  }
+ ]
+}

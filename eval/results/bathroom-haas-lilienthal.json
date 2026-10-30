@@ -1,0 +1,81 @@
+{
+ "image": "eval/images/bathroom-haas-lilienthal.jpg",
+ "sha256": "bb2968b08f5f8776051de70058657788f9e7133716499c7c80db343a7be5842d",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Bright window causes some overexposure but the room is still visible."
+ },
+ "latency": {
+  "ms": 21045,
+  "cost_usd": 0.05242,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 3,
+  "dropped_ungrounded": 1,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "High-sided bathtub to step over",
+   "regions": [
+    {
+     "concept": "bathtub",
+     "box": [
+      0.136,
+      0.507,
+      0.476,
+      0.801
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": null,
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.084,
+      0.755,
+      0.299,
+      0.988
+     ]
+    },
+    {
+     "concept": "toilet",
+     "box": [
+      0.158,
+      0.928,
+      0.339,
+      1
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,61 @@
+{
+ "image": "eval/images/bedroom-le-havre.jpg",
+ "sha256": "b4aa4fff8f9dd58cc0fcb956a34b3e928c2e9c0633256f91f11118d2d119cfdc",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 21400,
+  "cost_usd": 0.03487,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "trip",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Long curtain fabric pooling on the floor",
+   "regions": [
+    {
+     "concept": "floor",
+     "box": [
+      0,
+      0.788,
+      1,
+      1
+     ]
+    },
+    {
+     "concept": "bed",
+     "box": [
+      0.716,
+      0.643,
+      1,
+      0.893
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,529 @@
+{
+  "_about": "Hazards a screener would flag in each photo. bbox is [x1, y1, x2, y2] as fractions of width/height, or null for something about the whole photo. expect_usable: true = should be screened, false = should be turned away (not a room), null = either is acceptable. Drafted from visual inspection on 2026-10-30; see eval/README.md.",
+  "images": [
+    {
+      "path": "demo/bathroom-1.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.25,
+            0.74,
+            0.76,
+            0.95
+          ],
+          "hazard": "bath mat on the walking area"
+        },
+        {
+          "category": "trip",
+          "bbox": [
+            0.27,
+            0.76,
+            0.5,
+            0.88
+          ],
+          "hazard": "cord on the floor"
+        },
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.6,
+            0.65,
+            0.8,
+            0.85
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        }
+      ]
+    },
+    {
+      "path": "demo/bedroom-1.jpg",
+      "room": "bedroom",
+      "expect_usable": true,
+      "labels": []
+    },
+    {
+      "path": "demo/living-1.jpg",
+      "room": "living",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.58,
+            0.7,
+            0.74,
+            0.84
+          ],
+          "hazard": "lamp cord on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/balcony-kyiv.jpg",
+      "room": "outdoor",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.2,
+            0.55,
+            0.8,
+            1.0
+          ],
+          "hazard": "pots and planters crowding the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-bethune.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.13,
+            0.45,
+            0.67,
+            0.95
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-haas-lilienthal.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.13,
+            0.55,
+            0.48,
+            0.85
+          ],
+          "hazard": "high bath edge to step over"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-historic.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.38,
+            0.5,
+            0.6,
+            0.63
+          ],
+          "hazard": "rug on the floor"
+        },
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.0,
+            0.4,
+            0.4,
+            0.8
+          ],
+          "hazard": "no grab rail visible near the bath"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-hotel-paris.jpg",
+      "room": "bathroom",
+      "expect_usable": null,
+      "labels": [
+        {
+          "category": "lighting",
+          "bbox": null,
+          "hazard": "room looks dim"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-naulakha.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.8,
+            0.55,
+            0.92,
+            0.78
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        },
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.88,
+            0.6,
+            1.0,
+            1.0
+          ],
+          "hazard": "no grab rail visible near the bath"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-standen.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.33,
+            0.55,
+            0.6,
+            0.8
+          ],
+          "hazard": "no grab rail visible near the bath"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bathroom-subway-tiles.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.08,
+            0.58,
+            0.65,
+            1.0
+          ],
+          "hazard": "no grab rail visible near the bath"
+        },
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.83,
+            0.68,
+            1.0,
+            1.0
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bedroom-fairfax.jpg",
+      "room": "bedroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.1,
+            0.78,
+            0.3,
+            1.0
+          ],
+          "hazard": "rug on the floor beside the bed"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bedroom-jack-london.jpg",
+      "room": "bedroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.45,
+            0.82,
+            1.0,
+            1.0
+          ],
+          "hazard": "mat on the floor"
+        },
+        {
+          "category": "trip",
+          "bbox": [
+            0.48,
+            0.64,
+            0.98,
+            0.8
+          ],
+          "hazard": "bags and scuttle on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bedroom-le-havre.jpg",
+      "room": "bedroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.66,
+            0.75,
+            1.0,
+            0.95
+          ],
+          "hazard": "curtain fabric pooled on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bedroom-turton.jpg",
+      "room": "bedroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.08,
+            0.55,
+            0.36,
+            0.75
+          ],
+          "hazard": "raised hearth with items on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/bedroom-window.jpg",
+      "room": "bedroom",
+      "expect_usable": null,
+      "labels": [
+        {
+          "category": "lighting",
+          "bbox": null,
+          "hazard": "room looks dark"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/kitchen-berlin.jpg",
+      "room": "kitchen",
+      "expect_usable": true,
+      "labels": []
+    },
+    {
+      "path": "eval/images/kitchen-blue-white.jpg",
+      "room": "kitchen",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "reach",
+          "bbox": [
+            0.15,
+            0.38,
+            0.75,
+            0.55
+          ],
+          "hazard": "high wall cupboards"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/kitchen-standen.jpg",
+      "room": "kitchen",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "reach",
+          "bbox": [
+            0.0,
+            0.15,
+            0.2,
+            0.5
+          ],
+          "hazard": "high open shelves"
+        },
+        {
+          "category": "lighting",
+          "bbox": null,
+          "hazard": "room looks dim"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/living-lincoln.jpg",
+      "room": "living",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "lighting",
+          "bbox": null,
+          "hazard": "room looks dim"
+        },
+        {
+          "category": "trip",
+          "bbox": [
+            0.68,
+            0.78,
+            0.86,
+            0.93
+          ],
+          "hazard": "books stacked on the floor"
+        },
+        {
+          "category": "trip",
+          "bbox": [
+            0.3,
+            0.88,
+            0.7,
+            1.0
+          ],
+          "hazard": "rug on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/living-modern.jpg",
+      "room": "living",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.18,
+            0.82,
+            0.66,
+            1.0
+          ],
+          "hazard": "rug in front of the sofa"
+        },
+        {
+          "category": "trip",
+          "bbox": [
+            0.15,
+            0.6,
+            0.36,
+            0.86
+          ],
+          "hazard": "throw draped onto the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/living-staged-shop.jpg",
+      "room": "living",
+      "expect_usable": null,
+      "labels": [
+        {
+          "category": "trip",
+          "bbox": [
+            0.15,
+            0.75,
+            1.0,
+            1.0
+          ],
+          "hazard": "layered rugs on the floor"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/living-vizcaya.jpg",
+      "room": "living",
+      "expect_usable": null,
+      "labels": [
+        {
+          "category": "mobility",
+          "bbox": [
+            0.3,
+            0.75,
+            0.95,
+            1.0
+          ],
+          "hazard": "furniture narrowing the walking path"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/negative-ikea-display.jpg",
+      "room": "other",
+      "expect_usable": false,
+      "labels": []
+    },
+    {
+      "path": "eval/images/stairs-lyme-park.jpg",
+      "room": "hallway",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "upkeep",
+          "bbox": null,
+          "hazard": "damp and peeling paint on the walls"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/stairs-narrow-wooden.jpg",
+      "room": "hallway",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "mobility",
+          "bbox": [
+            0.25,
+            0.0,
+            0.75,
+            1.0
+          ],
+          "hazard": "steep, narrow stairs"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/toilet-futuro.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.55,
+            0.45,
+            1.0,
+            0.8
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        }
+      ]
+    },
+    {
+      "path": "eval/images/toilet-hk.jpg",
+      "room": "bathroom",
+      "expect_usable": null,
+      "labels": []
+    },
+    {
+      "path": "eval/images/toilet-standen.jpg",
+      "room": "bathroom",
+      "expect_usable": true,
+      "labels": [
+        {
+          "category": "bathroom",
+          "bbox": [
+            0.25,
+            0.45,
+            0.72,
+            0.85
+          ],
+          "hazard": "no grab rail visible beside the toilet"
+        }
+      ]
+    }
+  ]
+}

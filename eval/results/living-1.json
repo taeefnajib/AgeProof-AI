@@ -1,0 +1,60 @@
+{
+ "image": "demo/living-1.jpg",
+ "sha256": "08692ae85592542805707a5fa5b231451781d1cb61654eac13b8a8d658d276e4",
+ "room_type": "living",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 6919,
+  "cost_usd": 0.01013,
+  "measured_live": false
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_CORD_ON_FLOOR",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "50% of cord R2 is on or beside the floor"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "TRIP_CORD_ON_FLOOR",
+   "category": "trip",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Cord visible on floor by cabinet",
+   "regions": [
+    {
+     "concept": "electrical cord",
+     "box": [
+      0.577,
+      0.75,
+      0.712,
+      0.815
+     ]
+    }
+   ]
+  }
+ ]
+}

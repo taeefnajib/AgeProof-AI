@@ -1,0 +1,85 @@
+{
+ "image": "eval/images/bathroom-hotel-paris.jpg",
+ "sha256": "b581525d634c302ee9a9fb7a5d09bb600b43a30d281c25c15de8964f77e01d0e",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Lower part is dark with no floor visible and mirror reflections complicate view."
+ },
+ "latency": {
+  "ms": 20210,
+  "cost_usd": 0.02835,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [
+   {
+    "rule_id": "HIGH_STORAGE",
+    "region_ids": [
+     "R4",
+     "R6"
+    ],
+    "reason": "R4 and R6 are not real shelves in the room. They are a reflection in the mirror of shelving behind the camera."
+   }
+  ],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "LOW_LIGHT",
+   "region_ids": [],
+   "measurement": "mean brightness 65.7/255, 58.7% of pixels very dark"
+  },
+  {
+   "rule_id": "HIGH_STORAGE",
+   "region_ids": [
+    "R4",
+    "R6"
+   ],
+   "measurement": "shelf R4 top at 13% of photo height; shelf R6 top at 22% of photo height"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "bathroom",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Hair dryer cord close to basin",
+   "regions": [
+    {
+     "concept": "electrical cord",
+     "box": [
+      0.871,
+      0.431,
+      1,
+      0.546
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "LOW_LIGHT",
+   "category": "lighting",
+   "priority": "minor",
+   "confidence": "low",
+   "scope": "whole_image",
+   "title": "Room appears dimly lit in this photo",
+   "regions": []
+  }
+ ]
+}

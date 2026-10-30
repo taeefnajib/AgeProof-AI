@@ -1,0 +1,124 @@
+{
+ "image": "demo/bathroom-1.jpg",
+ "sha256": "ba2bb6ddeba9ecd400b7f8d500f1ec8762f950a7c0f6ee1711e2764d93de1508",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Bright glare from mirror light partially obscures upper left area."
+ },
+ "latency": {
+  "ms": 7569,
+  "cost_usd": 0.01142,
+  "measured_live": false
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 3,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 3
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "region_ids": [
+    "R2",
+    "R4"
+   ],
+   "measurement": "bath mat R2 covers 6.75% of the photo, 0px from toilet R4"
+  },
+  {
+   "rule_id": "TRIP_CORD_ON_FLOOR",
+   "region_ids": [
+    "R3"
+   ],
+   "measurement": "50% of cord R3 is on or beside the floor"
+  },
+  {
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "region_ids": [
+    "R4"
+   ],
+   "measurement": "no grab rail detected within 207px of toilet R4"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside the toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.622,
+      0.664,
+      0.776,
+      0.838
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "category": "trip",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Bath mat on a likely walking route",
+   "regions": [
+    {
+     "concept": "bath mat",
+     "box": [
+      0.289,
+      0.774,
+      0.747,
+      1
+     ]
+    },
+    {
+     "concept": "toilet",
+     "box": [
+      0.622,
+      0.664,
+      0.776,
+      0.838
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F3",
+   "rule_id": "TRIP_CORD_ON_FLOOR",
+   "category": "trip",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Cord on or near the floor",
+   "regions": [
+    {
+     "concept": "electrical cord",
+     "box": [
+      0.287,
+      0.744,
+      0.471,
+      0.841
+     ]
+    }
+   ]
+  }
+ ]
+}

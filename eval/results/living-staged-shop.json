@@ -1,0 +1,22 @@
+{
+ "image": "eval/images/living-staged-shop.jpg",
+ "sha256": "3aa99adcf93b871eafee9d70a75a792dbc7408c1ec86077d90a41a61cc894a09",
+ "room_type": "other",
+ "photo_check": {
+  "quality": "not_a_room",
+  "source": "model",
+  "detail": "Appears to be a furniture shop display rather than a home."
+ },
+ "latency": {
+  "ms": 8660,
+  "cost_usd": 0.01003,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": null,
+ "candidates": [],
+ "findings": []
+}

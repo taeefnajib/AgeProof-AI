@@ -1,0 +1,87 @@
+{
+ "image": "eval/images/bathroom-naulakha.jpg",
+ "sha256": "07c90e43ad51b0199d99af3c579cbbbaa41f088c6cd5b17ad181bbdaea9d4c3d",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 20411,
+  "cost_usd": 0.04993,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 4,
+  "dropped_ungrounded": 1,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 1,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "no grab rail detected within 255px of toilet R2"
+  },
+  {
+   "rule_id": "NO_GRAB_BAR_WET",
+   "region_ids": [
+    "R3"
+   ],
+   "measurement": "no grab rail detected near bathtub R3"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside the toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.813,
+      0.627,
+      0.919,
+      0.874
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "NO_GRAB_BAR_WET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible near the bathtub",
+   "regions": [
+    {
+     "concept": "bathtub",
+     "box": [
+      0.871,
+      0.757,
+      1,
+      1
+     ]
+    }
+   ]
+  }
+ ]
+}

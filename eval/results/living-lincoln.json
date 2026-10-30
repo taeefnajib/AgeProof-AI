@@ -1,0 +1,75 @@
+{
+ "image": "eval/images/living-lincoln.jpg",
+ "sha256": "4a4654931443a028cbf5e4c6c27f816c05b98642d6a0c57f0b4389da8bd01661",
+ "room_type": "living",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "Old-fashioned parlour with dark shadows around fireplace."
+ },
+ "latency": {
+  "ms": 28827,
+  "cost_usd": 0.03361,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "region_ids": [
+    "R1"
+   ],
+   "measurement": "rug R1 covers 3.27% of the photo, not next to a door or fixture"
+  },
+  {
+   "rule_id": "LOW_LIGHT",
+   "region_ids": [],
+   "measurement": "mean brightness 92.4/255, 41.2% of pixels very dark"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "TRIP_RUG_ON_PATH",
+   "category": "trip",
+   "priority": "minor",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Rug on the floor",
+   "regions": [
+    {
+     "concept": "rug",
+     "box": [
+      0.278,
+      0.881,
+      0.712,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "LOW_LIGHT",
+   "category": "lighting",
+   "priority": "minor",
+   "confidence": "low",
+   "scope": "whole_image",
+   "title": "Room appears dimly lit in this photo",
+   "regions": []
+  }
+ ]
+}

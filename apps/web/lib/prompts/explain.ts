@@ -2,7 +2,7 @@ import type { RegionRow } from "../pipeline/regionTable";
 import type { Luminance } from "../schema/analysis";
 import type { RuleCandidate } from "../schema/candidate";
 
-export const EXPLAIN_PROMPT_VERSION = "explain-v4";
+export const EXPLAIN_PROMPT_VERSION = "explain-v5";
 
 export function explainSystemPrompt(): string {
   return `You help older people and their families prepare for a home visit by an occupational therapist (OT).
@@ -23,6 +23,10 @@ Your tasks:
    Only report possible hazards or barriers. Don't list things that already look helpful.
    Shoes someone is wearing are never a hazard. Possible mould, damp or heavy dirt on walls, and window
    blinds that look loose or damaged, are worth reporting.
+   Be selective: add an observation only if an occupational therapist would clearly point it out, such as
+   things on the floor where people walk, a step or raised edge, or a fixture that is hard to get in and out of.
+   Most photos need 0 or 1 new observations. Do not comment on ordinary furniture: drawer or shelf heights,
+   a chair or table that isn't blocking the main walking route, or items stored on counters and shelves.
 
 Writing rules (strict):
 - Never use the words "safe", "unsafe", "compliant", "passes", or give any score.

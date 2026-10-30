@@ -1,0 +1,69 @@
+{
+ "images": 29,
+ "missing_results": [],
+ "precision": 0.778,
+ "recall": 0.771,
+ "per_category": {
+  "bathroom": {
+   "findings": 13,
+   "correct": 12,
+   "labels": 11,
+   "found": 11,
+   "precision": 0.923,
+   "recall": 1.0
+  },
+  "lighting": {
+   "findings": 5,
+   "correct": 4,
+   "labels": 4,
+   "found": 4,
+   "precision": 0.8,
+   "recall": 1.0
+  },
+  "mobility": {
+   "findings": 5,
+   "correct": 2,
+   "labels": 2,
+   "found": 1,
+   "precision": 0.4,
+   "recall": 0.5
+  },
+  "reach": {
+   "findings": 1,
+   "correct": 0,
+   "labels": 2,
+   "found": 0,
+   "precision": 0.0,
+   "recall": 0.0
+  },
+  "trip": {
+   "findings": 10,
+   "correct": 9,
+   "labels": 15,
+   "found": 10,
+   "precision": 0.9,
+   "recall": 0.667
+  },
+  "upkeep": {
+   "findings": 2,
+   "correct": 1,
+   "labels": 1,
+   "found": 1,
+   "precision": 0.5,
+   "recall": 1.0
+  }
+ },
+ "photo_check": {
+  "right": 24,
+  "wrong": 0,
+  "either": 5
+ },
+ "grounding": {
+  "proposed_by_vlm": 45,
+  "dropped_ungrounded": 5,
+  "dropped_pct": 11.1
+ },
+ "latency_s_mean": 18.4,
+ "cost_usd_mean": 0.0335,
+ "live_runs": 25
+}

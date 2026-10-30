@@ -11,7 +11,9 @@
     "smoke:meta": "tsx scripts/smoke-meta.ts",
     "pipeline": "tsx scripts/run-pipeline.ts",
     "typecheck": "tsc --noEmit",
-    "probe": "tsx scripts/probe-sam.ts"
+    "probe": "tsx scripts/probe-sam.ts",
+    "eval": "tsx scripts/run-eval.ts",
+    "demo:build": "tsx scripts/demo-build.ts"
   },
   "dependencies": {
     "@meta-sam/parser": "0.1.0",

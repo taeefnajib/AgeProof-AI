@@ -1,0 +1,52 @@
+{
+ "image": "eval/images/bedroom-turton.jpg",
+ "sha256": "89d1ab67df43c86106d42f1d5f2352a9262634d4c205b2483b2180408432cce3",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 20921,
+  "cost_usd": 0.03517,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": null,
+   "category": "mobility",
+   "priority": "worth_checking",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "High four-poster bed hard to get in and out",
+   "regions": [
+    {
+     "concept": "bed",
+     "box": [
+      0.343,
+      0.076,
+      0.7,
+      0.929
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,31 @@
+{
+ "image": "eval/images/kitchen-blue-white.jpg",
+ "sha256": "9372c9df1cd2df9bf5af817af336bc36f51ce9ea503b416b886fc491421e60f4",
+ "room_type": "kitchen",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 18522,
+  "cost_usd": 0.0407,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 0,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 0
+ },
+ "candidates": [],
+ "findings": []
+}

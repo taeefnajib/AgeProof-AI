@@ -1,0 +1,31 @@
+{
+ "image": "eval/images/balcony-kyiv.jpg",
+ "sha256": "401cc7dd37f26b12e375fad16f31e305725644098ac98a405885c21bd9fb7092",
+ "room_type": "outdoor",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 18465,
+  "cost_usd": 0.02981,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 1,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 0
+ },
+ "candidates": [],
+ "findings": []
+}

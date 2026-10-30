@@ -1,0 +1,48 @@
+{
+ "image": "eval/images/bedroom-window.jpg",
+ "sha256": "da4bc7fa9e85c7123b942ec561dfef2281b5518ecb24f9e17afd3125f2daa06a",
+ "room_type": "bedroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": "No floor area is visible, view is mainly bed and window."
+ },
+ "latency": {
+  "ms": 19698,
+  "cost_usd": 0.03105,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 1,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [
+  {
+   "rule_id": "LOW_LIGHT",
+   "region_ids": [],
+   "measurement": "mean brightness 76.7/255, 63.1% of pixels very dark"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "LOW_LIGHT",
+   "category": "lighting",
+   "priority": "minor",
+   "confidence": "low",
+   "scope": "whole_image",
+   "title": "Room looks dim in this photo",
+   "regions": []
+  }
+ ]
+}

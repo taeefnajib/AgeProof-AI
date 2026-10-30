@@ -1,0 +1,60 @@
+{
+ "image": "eval/images/toilet-standen.jpg",
+ "sha256": "fcad2d490030f9a195a8bf05b50393b4242041082fc29bb20a8910d1158abb50",
+ "room_type": "bathroom",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 15460,
+  "cost_usd": 0.02935,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 1,
+  "rejected": [],
+  "restored": 0,
+  "kept": 1
+ },
+ "candidates": [
+  {
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "region_ids": [
+    "R2"
+   ],
+   "measurement": "no grab rail detected within 197px of toilet R2"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "NO_GRAB_BAR_TOILET",
+   "category": "bathroom",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "No grab rail visible beside the toilet",
+   "regions": [
+    {
+     "concept": "toilet",
+     "box": [
+      0.433,
+      0.664,
+      0.542,
+      0.815
+     ]
+    }
+   ]
+  }
+ ]
+}

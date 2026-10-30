@@ -1,0 +1,75 @@
+{
+ "image": "eval/images/stairs-narrow-wooden.jpg",
+ "sha256": "b9c964804cd074117fb923d30a6f81419ae111ad6353e935298d13999c9af711",
+ "room_type": "hallway",
+ "photo_check": {
+  "quality": "ok",
+  "source": "model",
+  "detail": ""
+ },
+ "latency": {
+  "ms": 24717,
+  "cost_usd": 0.0416,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": {
+  "proposed": 2,
+  "dropped_ungrounded": 0,
+  "language_fixed": 0,
+  "language_dropped": 0,
+  "deduplicated": 0,
+  "rejected": [],
+  "restored": 0,
+  "kept": 2
+ },
+ "candidates": [
+  {
+   "rule_id": "STEP_THRESHOLD",
+   "region_ids": [
+    "R18"
+   ],
+   "measurement": "stairs R18 detected"
+  },
+  {
+   "rule_id": "LOW_LIGHT",
+   "region_ids": [],
+   "measurement": "mean brightness 83.8/255, 39.6% of pixels very dark"
+  }
+ ],
+ "findings": [
+  {
+   "id": "F1",
+   "rule_id": "STEP_THRESHOLD",
+   "category": "mobility",
+   "priority": "discuss_soon",
+   "confidence": "medium",
+   "scope": "region",
+   "title": "Long steep stairs in hallway",
+   "regions": [
+    {
+     "concept": "stairs",
+     "box": [
+      0.281,
+      0.002,
+      0.756,
+      1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "F2",
+   "rule_id": "LOW_LIGHT",
+   "category": "lighting",
+   "priority": "minor",
+   "confidence": "low",
+   "scope": "whole_image",
+   "title": "Stairway appears dim in this photo",
+   "regions": []
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "image": "eval/images/living-vizcaya.jpg",
+ "sha256": "d2adcbe0650605e3332ba72b5147ab1278acf4f6c9993c621654e06e27b7ae5e",
+ "room_type": "other",
+ "photo_check": {
+  "quality": "not_a_room",
+  "source": "model",
+  "detail": "Ornate hall with visitors appears to be a museum, not a lived-in home."
+ },
+ "latency": {
+  "ms": 10297,
+  "cost_usd": 0.01046,
+  "measured_live": true
+ },
+ "prompt_versions": {
+  "inventory": "inventory-v6",
+  "explain": "explain-v5"
+ },
+ "validation": null,
+ "candidates": [],
+ "findings": []
+}
