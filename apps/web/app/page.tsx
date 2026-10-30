@@ -11,7 +11,7 @@ export default function Home() {
         Spot possible trip and access hazards in a room photo.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
-        Upload a photo of a bathroom, bedroom or living room. AgeProof AI marks things that may be
+        Upload a photo of a bathroom, bedroom, living room, kitchen, hallway or balcony. AgeProof AI marks things that may be
         worth discussing with an occupational therapist, and explains why in plain language.
       </p>
 

@@ -1,18 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { analyzeOnServer } from "@/lib/client/analyzeClient";
+import { demoModeOn, replayDemo, type DemoName } from "@/lib/client/demoReplay";
 import { downscaleImage } from "@/lib/client/resize";
 import { saveResult } from "@/lib/client/resultStore";
 import type { StepTiming } from "@/lib/schema/analysis";
 import { ROOM_TYPES, type RoomType } from "@/lib/schema/vocabulary";
 import { PipelineTimeline } from "./PipelineTimeline";
 
-const SAMPLES = [
-  { name: "Bathroom", src: "/samples/bathroom.jpg" },
-  { name: "Bedroom", src: "/samples/bedroom.jpg" },
-  { name: "Living room", src: "/samples/living.jpg" },
+const SAMPLES: { name: string; src: string; demo: DemoName }[] = [
+  { name: "Bathroom", src: "/samples/bathroom.jpg", demo: "bathroom" },
+  { name: "Bedroom", src: "/samples/bedroom.jpg", demo: "bedroom" },
+  { name: "Living room", src: "/samples/living.jpg", demo: "living" },
 ];
 
 const ROOM_LABELS: Record<RoomType, string> = {
@@ -25,6 +26,8 @@ const ROOM_LABELS: Record<RoomType, string> = {
   other: "Other",
 };
 
+const noopSubscribe = () => () => {};
+
 export function UploadForm() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,6 +37,8 @@ export function UploadForm() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const demoMode = useSyncExternalStore(noopSubscribe, demoModeOn, () => false);
 
   // Next keeps this page's state alive (hidden) while the result page is shown, so
   // coming back would still show the last photo mid-analysis. Reset when it's hidden.
@@ -47,22 +52,36 @@ export function UploadForm() {
       setTimings([]);
       setRunning(false);
       setError(null);
+      setNotice(null);
       setDragging(false);
       if (input) input.value = "";
     };
   }, []);
 
   const run = useCallback(
-    async (blob: Blob) => {
+    async (blob: Blob, demo?: DemoName) => {
       setError(null);
+      setNotice(null);
       setTimings([]);
       setRunning(true);
+      const onStep = (t: StepTiming) => setTimings((prev) => [...prev, t]);
       try {
         const small = await downscaleImage(blob);
         setPreview(URL.createObjectURL(small));
-        const analysis = await analyzeOnServer(small, roomType, (t) =>
-          setTimings((prev) => [...prev, t]),
-        );
+        let analysis;
+        if (demo && demoModeOn()) {
+          analysis = await replayDemo(demo, onStep);
+        } else {
+          try {
+            analysis = await analyzeOnServer(small, roomType, onStep);
+          } catch (e) {
+            // Safety net for sample rooms: replay the saved result if the live API fails.
+            if (!demo) throw e;
+            setNotice("The live analysis isn't available right now, so this is a saved result for the sample room.");
+            setTimings([]);
+            analysis = await replayDemo(demo, onStep);
+          }
+        }
         saveResult(analysis);
         router.push(`/result/${analysis.id}`);
       } catch (e) {
@@ -84,9 +103,9 @@ export function UploadForm() {
     void run(file);
   };
 
-  const runSample = async (src: string) => {
-    const blob = await (await fetch(src)).blob();
-    void run(blob);
+  const runSample = async (sample: (typeof SAMPLES)[number]) => {
+    const blob = await (await fetch(sample.src)).blob();
+    void run(blob, sample.demo);
   };
 
   return (
@@ -153,13 +172,20 @@ export function UploadForm() {
         </label>
 
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted">Or try a sample room:</span>
+          <span className="text-muted">
+            {demoMode ? (
+              <span className="mr-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
+                Demo mode
+              </span>
+            ) : null}
+            Or try a sample room:
+          </span>
           {SAMPLES.map((s) => (
             <button
               key={s.src}
               type="button"
               disabled={running}
-              onClick={() => void runSample(s.src)}
+              onClick={() => void runSample(s)}
               className="rounded-full border border-line bg-card px-3 py-1.5 hover:border-accent hover:text-accent disabled:opacity-50"
             >
               {s.name}
@@ -172,6 +198,12 @@ export function UploadForm() {
         <div className="rounded-xl border border-line bg-card p-4">
           <PipelineTimeline timings={timings} running={running} />
         </div>
+      )}
+
+      {notice && (
+        <p role="status" className="rounded-xl border border-amber/50 bg-amber/10 px-4 py-3 text-sm">
+          {notice}
+        </p>
       )}
 
       {error && (

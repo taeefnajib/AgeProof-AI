@@ -99,9 +99,15 @@ export function ResultView() {
       </div>
 
       <div className="mt-5 rounded-xl border border-line bg-card p-4">
-        <PipelineTimeline timings={analysis.timings} running={false} />
+        <PipelineTimeline timings={analysis.timings} running={false} costUsd={analysis.demo ? undefined : analysis.cost_usd} />
       </div>
 
+      {analysis.demo && (
+        <p className="mt-5 rounded-xl border border-line bg-accent-soft px-4 py-3 text-sm">
+          Demo mode: this is a saved result for a sample room, replayed with its original step timings. No photo
+          was sent anywhere.
+        </p>
+      )}
       {check.source === "user" && (
         <p className="mt-5 rounded-xl border border-amber/50 bg-amber/10 px-4 py-3 text-sm">
           The model wasn&apos;t sure this is a room in a home, so it was screened at your request. Findings may be
@@ -111,27 +117,30 @@ export function ResultView() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-3 lg:sticky lg:top-6 lg:self-start">
-          {showRaw ? (
-            <RegionOverlay
-              src={analysis.image_data_url}
-              width={analysis.width}
-              height={analysis.height}
-              regions={analysis.regions.filter((r) => !hiddenConcepts.has(r.concept))}
-              activeId={activeRegion}
-              onHover={setActiveRegion}
-            />
-          ) : (
-            <FindingsOverlay
-              src={analysis.image_data_url}
-              width={analysis.width}
-              height={analysis.height}
-              findings={analysis.findings}
-              regions={analysis.regions}
-              activeId={activeFinding ?? selectedFinding}
-              onActive={setActiveFinding}
-              onSelect={select}
-            />
-          )}
+          {/* Portrait photos: cap the height to the viewport so the list stays in view. */}
+          <div className="mx-auto" style={{ maxWidth: `calc(78vh * ${analysis.width / analysis.height})` }}>
+            {showRaw ? (
+              <RegionOverlay
+                src={analysis.image_data_url}
+                width={analysis.width}
+                height={analysis.height}
+                regions={analysis.regions.filter((r) => !hiddenConcepts.has(r.concept))}
+                activeId={activeRegion}
+                onHover={setActiveRegion}
+              />
+            ) : (
+              <FindingsOverlay
+                src={analysis.image_data_url}
+                width={analysis.width}
+                height={analysis.height}
+                findings={analysis.findings}
+                regions={analysis.regions}
+                activeId={activeFinding ?? selectedFinding}
+                onActive={setActiveFinding}
+                onSelect={select}
+              />
+            )}
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
             <button
               type="button"

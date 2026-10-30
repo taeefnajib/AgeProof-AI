@@ -17,9 +17,12 @@ function fmt(ms: number) {
 export function PipelineTimeline({
   timings,
   running,
+  costUsd,
 }: {
   timings: StepTiming[];
   running: boolean;
+  /** Shown with the total time once the run is finished. */
+  costUsd?: number;
 }) {
   const done = new Map(timings.map((t) => [t.step, t]));
   const firstPending = PIPELINE_STEPS.find((s) => !done.has(s.step))?.step;
@@ -61,6 +64,14 @@ export function PipelineTimeline({
           </li>
         );
       })}
+      {!running && timings.length > 1 && (
+        <li className="ml-auto text-xs tabular-nums text-muted">
+          {timings.every((t) => t.cached)
+            ? "replayed from cache"
+            : `done in ${fmt(timings.reduce((s, t) => s + t.ms, 0))}`}
+          {costUsd !== undefined && costUsd > 0 ? ` · $${costUsd.toFixed(3)}` : ""}
+        </li>
+      )}
     </ol>
   );
 }
