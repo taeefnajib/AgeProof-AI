@@ -3,8 +3,9 @@ import { DISCLAIMER } from "@/components/Disclaimer";
 import { checklistFor } from "../checklist";
 import { findingsOverlaySvg } from "../render/overlay";
 import { PRIORITY_STYLE } from "../render/palette";
-import { priorityCounts, questionsFor } from "../pipeline/report";
+import { findingGroups, priorityCounts, questionsFor, reportPhotos } from "../pipeline/report";
 import type { PhotoAnalysis } from "../schema/analysis";
+import type { Screening } from "../schema/screening";
 import { ROOM_NAMES, CATEGORY_LABEL } from "../labels";
 
 /**
@@ -61,17 +62,29 @@ export async function annotatedPhotoJpeg(a: PhotoAnalysis): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function reportFileName(a: PhotoAnalysis): string {
-  const date = a.created_at.slice(0, 10);
-  return `ageproof-${a.room_type}-screening-${date}.pdf`;
+export function reportFileName(s: Screening): string {
+  const date = s.created_at.slice(0, 10);
+  return `ageproof-${s.room_type}-screening-${date}.pdf`;
 }
 
-export function reportDate(a: PhotoAnalysis): string {
-  return new Date(a.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
+export function reportDate(s: Screening): string {
+  return new Date(s.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
 }
 
-/** `photoJpeg`: the annotated photo as a JPEG data URL (defaults to drawing it in the browser). */
-export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Promise<Blob> {
+const UNUSABLE_TEXT: Record<string, string> = {
+  too_dark: "This photo was too dark to screen",
+  too_blurry: "This photo was too blurry to screen",
+  not_a_room: "This photo didn't look like a room in a home",
+};
+
+/**
+ * `annotate`: draws a photo with its findings layer as a JPEG data URL
+ * (defaults to the browser canvas; scripts pass a sharp-based one).
+ */
+export async function buildReportPdf(
+  s: Screening,
+  annotate: (a: PhotoAnalysis) => Promise<string> = annotatedPhotoJpeg,
+): Promise<Blob> {
   const { jsPDF } = await import("jspdf");
   const doc: JsPDF = new jsPDF({ unit: "mm", format: "a4" });
   const width = A4.w - 2 * M;
@@ -102,17 +115,22 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
     y += opts.gap ?? 0;
   };
 
+  const photos = reportPhotos(s);
+  const groups = findingGroups(s);
+  const all = groups.flat();
+  const multi = photos.length > 1;
+
   // Header
   text("AgeProof AI", { size: 9, style: "bold", colour: ACCENT, gap: 1 });
   text("Home-safety screening for an occupational therapist", { size: 17, style: "bold", gap: 1.5 });
   text(
-    `${ROOM_NAMES[a.room_type]} · photo screened ${reportDate(a)} · ${a.findings.length} possible ${
-      a.findings.length === 1 ? "hazard" : "hazards"
+    `${ROOM_NAMES[s.room_type]} · ${photos.length} ${photos.length === 1 ? "photo" : "photos"} screened ${reportDate(s)} · ${all.length} possible ${
+      all.length === 1 ? "hazard" : "hazards"
     } marked`,
     { size: 9.5, colour: MUTED, gap: 2 },
   );
   // Priority summary chips
-  const counts = priorityCounts(a.findings);
+  const counts = priorityCounts(all);
   let cx = M;
   doc.setFont("helvetica", "normal").setFontSize(8.5);
   for (const p of ["discuss_soon", "worth_checking", "minor"] as const) {
@@ -142,56 +160,78 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
   y += 2.5;
   text(DISCLAIMER, { size: 8.5, style: "italic", colour: MUTED, x: M + 4, w: width - 8, gap: 5 });
 
-  // Annotated photo
-  const photo = photoJpeg ?? (await annotatedPhotoJpeg(a));
-  const maxH = 115;
-  let pw = width;
-  let ph = (a.height / a.width) * pw;
-  if (ph > maxH) {
-    ph = maxH;
-    pw = (a.width / a.height) * ph;
-  }
-  doc.addImage(photo, "JPEG", M + (width - pw) / 2, y, pw, ph);
-  y += ph + 6;
+  // Each photo: annotated image, then its findings
+  for (const { letter, photo: a, usable } of photos) {
+    if (multi) {
+      ensure(20);
+      text(`Photo ${letter}`, { size: 14, style: "bold", gap: 2 });
+    }
+    if (!usable) {
+      text(`${UNUSABLE_TEXT[a.photo_check?.quality ?? ""] ?? "This photo couldn't be screened"}, so nothing in it has been checked.`, {
+        size: 10,
+        colour: MUTED,
+        gap: 6,
+      });
+      continue;
+    }
+    const maxH = multi ? 90 : 115;
+    let pw = width;
+    let ph = (a.height / a.width) * pw;
+    if (ph > maxH) {
+      ph = maxH;
+      pw = (a.width / a.height) * ph;
+    }
+    ensure(ph + 4);
+    doc.addImage(await annotate(a), "JPEG", M + (width - pw) / 2, y, pw, ph);
+    y += ph + 6;
 
-  // Findings
-  text("Possible hazards seen in this photo", { size: 13, style: "bold", gap: 2 });
-  if (a.findings.length === 0) {
-    text(
-      "No possible hazards were flagged from what is visible in this photo. That doesn't mean there are none: items not visible have not been checked.",
-      { size: 10, colour: MUTED, gap: 4 },
-    );
+    text("Possible hazards seen in this photo", { size: multi ? 11.5 : 13, style: "bold", gap: 2 });
+    if (a.findings.length === 0) {
+      text(
+        "No possible hazards were flagged from what is visible in this photo. That doesn't mean there are none: items not visible have not been checked.",
+        { size: 10, colour: MUTED, gap: 4 },
+      );
+    }
+    a.findings.forEach((f, i) => {
+      ensure(22);
+      const style = PRIORITY_STYLE[f.priority];
+      const r = letter ? 3.8 : 3.2;
+      doc.setFillColor(...hex(style.colour));
+      doc.circle(M + r, y + 3, r, "F");
+      doc.setFont("helvetica", "bold").setFontSize(letter ? 8 : 9).setTextColor(255, 255, 255);
+      doc.text(`${letter}${i + 1}`, M + r, y + 3, { align: "center", baseline: "middle" });
+      const x = M + 10;
+      text(f.title, { size: 11, style: "bold", x, gap: 0.6 });
+      text(
+        `${style.label} · ${CATEGORY_LABEL[f.category]} · ${f.confidence} confidence · ${
+          f.region_ids.length ? "marked on photo" : "whole photo"
+        }`,
+        { size: 8.5, colour: hex(style.colour), x, gap: 1.2 },
+      );
+      text(f.explanation, { size: 9.5, x, gap: 1 });
+      text(`To discuss: ${f.suggestion}`, { size: 9.5, colour: ACCENT, x, gap: 4 });
+    });
+    y += 2;
   }
-  a.findings.forEach((f, i) => {
-    ensure(22);
-    const style = PRIORITY_STYLE[f.priority];
-    doc.setFillColor(...hex(style.colour));
-    doc.circle(M + 3.2, y + 3, 3.2, "F");
-    doc.setFont("helvetica", "bold").setFontSize(9).setTextColor(255, 255, 255);
-    doc.text(String(i + 1), M + 3.2, y + 3, { align: "center", baseline: "middle" });
-    const x = M + 9;
-    text(f.title, { size: 11, style: "bold", x, gap: 0.6 });
-    text(
-      `${style.label} · ${CATEGORY_LABEL[f.category]} · ${f.confidence} confidence · ${
-        f.region_ids.length ? "marked on photo" : "whole photo"
-      }`,
-      { size: 8.5, colour: hex(style.colour), x, gap: 1.2 },
-    );
-    text(f.explanation, { size: 9.5, x, gap: 1 });
-    text(`To discuss: ${f.suggestion}`, { size: 9.5, colour: ACCENT, x, gap: 4 });
-  });
+  if (multi && all.length > 0) {
+    text("Each photo was screened on its own, so something visible in two photos may be listed twice.", {
+      size: 8.5,
+      colour: MUTED,
+      gap: 2,
+    });
+  }
 
   // Questions for the OT, one per finding
-  const otQuestions = questionsFor(a.findings);
+  const otQuestions = questionsFor(groups);
   if (otQuestions.length) {
     ensure(20);
     y += 2;
     text("Questions to ask your OT", { size: 13, style: "bold", gap: 2 });
     for (const q of otQuestions) {
       ensure(8);
-      text(`${q.number}.`, { size: 9.5, style: "bold", colour: MUTED, gap: 0 });
+      text(`${q.label}.`, { size: 9.5, style: "bold", colour: MUTED, gap: 0 });
       y -= 9.5 * 0.42;
-      text(`${q.question} (${q.title})`, { size: 9.5, x: M + 6, gap: 1.4 });
+      text(`${q.question} (${q.title})`, { size: 9.5, x: M + 8, gap: 1.4 });
     }
   }
 
@@ -204,7 +244,7 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
     colour: MUTED,
     gap: 2,
   });
-  for (const q of checklistFor(a.room_type)) {
+  for (const q of checklistFor(s.room_type)) {
     ensure(6);
     doc.setDrawColor(...MUTED);
     doc.rect(M + 0.5, y + 0.8, 3, 3);
@@ -225,7 +265,7 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
 
   // How it was made, then footers
   text(
-    "How this was made: SAM 3.1 outlined objects in the photo, measured rules checked them, and Muse Spark wrote the explanations. Every marked finding points at an outlined region. People in the photo were blurred, and the photo was not stored.",
+    "How this was made: SAM 3.1 outlined objects in each photo, measured rules checked them, and Muse Spark wrote the explanations. Every marked finding points at an outlined region. People in the photos were blurred, and the photos were not stored.",
     { size: 8, colour: MUTED },
   );
   const pages = doc.getNumberOfPages();
@@ -250,16 +290,23 @@ export function downloadBlob(blob: Blob, name: string) {
 }
 
 /** Plain-text summary for an email body (mailto bodies must stay short). */
-export function emailBody(a: PhotoAnalysis): string {
+export function emailBody(s: Screening): string {
+  const photos = reportPhotos(s);
+  const items = photos.flatMap(({ letter, photo, usable }) =>
+    usable
+      ? photo.findings.map(
+          (f, i) => `${letter}${i + 1}. ${f.title} (${PRIORITY_STYLE[f.priority].label.toLowerCase()})`,
+        )
+      : [],
+  );
+  const what = photos.length === 1 ? "a photo" : `${photos.length} photos`;
   const lines = [
     `Hello,`,
     ``,
-    `I used AgeProof AI to screen a photo of my ${ROOM_NAMES[a.room_type].toLowerCase()} (${reportDate(a)}) before a home visit. The full report is attached as a PDF.`,
+    `I used AgeProof AI to screen ${what} of my ${ROOM_NAMES[s.room_type].toLowerCase()} (${reportDate(s)}) before a home visit. The full report is attached as a PDF.`,
     ``,
-    `Possible hazards marked in the photo:`,
-    ...(a.findings.length
-      ? a.findings.map((f, i) => `${i + 1}. ${f.title} (${PRIORITY_STYLE[f.priority].label.toLowerCase()})`)
-      : ["None flagged from what is visible in the photo."]),
+    `Possible hazards marked in the ${photos.length === 1 ? "photo" : "photos"}:`,
+    ...(items.length ? items : ["None flagged from what is visible."]),
     ``,
     DISCLAIMER,
   ];

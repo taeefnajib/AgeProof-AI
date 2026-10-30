@@ -1,5 +1,7 @@
+import type { PhotoAnalysis } from "../schema/analysis";
 import type { RuleId } from "../schema/candidate";
 import type { Finding } from "../schema/finding";
+import { isUsable, photoLabel, type Screening } from "../schema/screening";
 
 /**
  * "Questions to ask your OT" for the report: one per finding, written as an
@@ -32,18 +34,27 @@ const CATEGORY_QUESTIONS: Record<Finding["category"], string> = {
   other: "Is this worth changing, and what options are there?",
 };
 
-export type ReportQuestion = { number: number; title: string; question: string };
+/** `label` is the finding's number as shown: "3", or "B2" when there are several photos. */
+export type ReportQuestion = { label: string; title: string; question: string };
 
-export function questionsFor(findings: Finding[]): ReportQuestion[] {
+/**
+ * One question per finding, in order. `groups` are the findings of each photo;
+ * with more than one photo, labels are prefixed with the photo letter (A1, B2).
+ */
+export function questionsFor(groups: Finding[][]): ReportQuestion[] {
+  const multi = groups.length > 1;
+  const labelled = groups.flatMap((findings, p) =>
+    findings.map((f, i) => ({ f, label: `${multi ? String.fromCharCode(65 + p) : ""}${i + 1}` })),
+  );
   const seen = new Set<string>();
   const out: ReportQuestion[] = [];
-  findings.forEach((f, i) => {
+  labelled.forEach(({ f, label }) => {
     let question = (f.rule_id && RULE_QUESTIONS[f.rule_id as RuleId]) || CATEGORY_QUESTIONS[f.category];
     if (f.rule_id === "TRIP_CORD_ON_FLOOR" && /hose/i.test(f.title)) question = question.replace("cord", "hose");
-    // A rule that fired twice (two cords) gets one question, citing the first finding.
+    // A rule that fired twice (two cords, or the same rug in two photos) gets one question.
     if (seen.has(question) && f.rule_id) return;
     seen.add(question);
-    out.push({ number: i + 1, title: f.title, question });
+    out.push({ label, title: f.title, question });
   });
   return out;
 }
@@ -52,4 +63,22 @@ export function priorityCounts(findings: Finding[]): Record<Finding["priority"],
   const counts = { discuss_soon: 0, worth_checking: 0, minor: 0 };
   for (const f of findings) counts[f.priority]++;
   return counts;
+}
+
+/** Report contents for a screening, shared by the report page and the PDF. */
+export type ReportPhoto = {
+  /** "A", "B"… when there are several photos, else "". */
+  letter: string;
+  photo: PhotoAnalysis;
+  usable: boolean;
+};
+
+export function reportPhotos(s: Screening): ReportPhoto[] {
+  const multi = s.photos.length > 1;
+  return s.photos.map((photo, i) => ({ letter: multi ? photoLabel(i) : "", photo, usable: isUsable(photo) }));
+}
+
+/** Findings of usable photos, one group per photo (empty for photos that couldn't be screened). */
+export function findingGroups(s: Screening): Finding[][] {
+  return s.photos.map((p) => (isUsable(p) ? p.findings : []));
 }

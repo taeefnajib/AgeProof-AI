@@ -2,7 +2,7 @@
 
 **Photo-based home-safety screening for older people, built so the AI can't make up where a hazard is.**
 
-Take a photo of a bathroom, bedroom, living room, kitchen, hallway or balcony. In about 20 seconds the photo lights up with numbered, colour-coded regions ("1 · Cord on the floor", "2 · No grab rail visible beside the toilet"), each with a plain-language explanation. One click turns it into a report to bring to an occupational therapist (OT).
+Take up to five photos of a bathroom, bedroom, living room, kitchen, hallway or balcony. In about 20 seconds per photo the photo lights up with numbered, colour-coded regions ("1 · Cord on the floor", "2 · No grab rail visible beside the toilet"), each with a plain-language explanation. One click turns it into a report to bring to an occupational therapist (OT).
 
 > *AgeProof AI highlights possible hazards visible in photos. It cannot confirm whether a home is safe and does not replace an assessment by an occupational therapist or other qualified professional. Items not visible in the photos have not been checked.*
 
@@ -43,6 +43,7 @@ Full detail, including every rule and threshold: [docs/pipeline.md](docs/pipelin
 
 ## What you get
 
+- **Up to 5 photos per room**: each is analysed on its own (two at a time) with its own timeline; the room type is the most common detection unless you set it. The result has a tab per photo (A, B, C…), and the report numbers findings A1, B2…
 - **Annotated photo**: each finding's region shaded orange, amber or grey by priority (never alarming red) with a numbered pin. Hover a pin ↔ highlight its row. "Show all detected objects" reveals every SAM 3.1 mask.
 - **Plain-language findings**: why it may matter, what to discuss with an OT, and how it was found (the rule and its measurement, or a Muse Spark observation, with region IDs).
 - **Pipeline timeline**: each step's model, time and detail, live while it runs.

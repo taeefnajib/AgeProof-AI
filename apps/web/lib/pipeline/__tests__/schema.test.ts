@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { InventorySchema } from "../../schema/inventory";
 import { checkPhoto } from "../analyze";
+import type { PhotoAnalysis } from "../../schema/analysis";
+import { asScreening, photoLabel, screeningRoomType } from "../../schema/screening";
 
 describe("InventorySchema", () => {
   it("accepts a valid inventory and rejects unknown concepts", () => {
@@ -42,5 +44,34 @@ describe("checkPhoto", () => {
     expect(checkPhoto(notRoom, { mean: 120, dark_pct: 5 }, 500).quality).toBe("not_a_room");
     expect(checkPhoto(notRoom, { mean: 120, dark_pct: 5 }, 500, true)).toMatchObject({ quality: "ok", source: "user" });
     expect(checkPhoto({ ...inv, photo_quality: "too_blurry" }, { mean: 120, dark_pct: 5 }, 500, true).quality).toBe("too_blurry");
+  });
+});
+
+describe("screenings", () => {
+  const photo = (room_type: string, ok = true) =>
+    ({
+      id: "x",
+      room_type,
+      room_type_source: "auto",
+      created_at: "",
+      photo_check: { quality: ok ? "ok" : "too_dark", source: "model", detail: "" },
+      inventory: { is_room_photo: true, photo_quality: "ok" },
+    }) as unknown as PhotoAnalysis;
+
+  it("labels photos A, B, C", () => {
+    expect([0, 1, 4].map(photoLabel)).toEqual(["A", "B", "E"]);
+  });
+
+  it("picks the most common room type among usable photos; the user's choice wins", () => {
+    expect(screeningRoomType([photo("bedroom"), photo("bathroom"), photo("bathroom")])).toBe("bathroom");
+    expect(screeningRoomType([photo("bedroom"), photo("bathroom")])).toBe("bedroom"); // tie → first
+    expect(screeningRoomType([photo("living", false), photo("bedroom")])).toBe("bedroom");
+    expect(screeningRoomType([photo("living")], "kitchen")).toBe("kitchen");
+  });
+
+  it("wraps results saved before multi-photo support", () => {
+    const s = asScreening(photo("living"));
+    expect(s.photos).toHaveLength(1);
+    expect(s.room_type).toBe("living");
   });
 });
