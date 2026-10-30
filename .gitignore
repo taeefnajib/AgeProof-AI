@@ -7,3 +7,6 @@ node_modules/
 .DS_Store
 __pycache__/
 node_modules
+
+# Local assistant instructions (kept out of the repo)
+CLAUDE.md

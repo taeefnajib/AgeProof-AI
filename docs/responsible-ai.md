@@ -16,7 +16,7 @@ This page lists each safeguard and where it lives in the code, so it can be chec
 
 ## 2. Careful language
 
-| Rule (CLAUDE.md §7) | Enforcement |
+| Rule | Enforcement |
 |---|---|
 | Never "safe", "unsafe", "compliant", "passes", or a score | Banned-word check on every title, explanation and suggestion: a breaking finding falls back to the rule's template wording, or is dropped if it has none (`language_fixed`, `language_dropped`). No score exists anywhere in the schema. |
 | Suggestions are things to discuss, never instructions | Suggestions starting with "install", "drill", "fit", "remove", "replace", "buy", "add", "put", "move" or "mount" are rejected the same way. The report's "Questions to ask your OT" are fixed templates (`lib/pipeline/report.ts`), unit-tested against the same words. |

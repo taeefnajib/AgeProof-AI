@@ -115,4 +115,4 @@ docs/               pipeline.md, responsible-ai.md, meta-api-notes.md
 
 ## Licence
 
-MIT. Committed photos are CC0 or public domain (see [demo/SOURCES.md](demo/SOURCES.md)).
+MIT. Photos are CC0 / public domain from Wikimedia Commons, or AI-generated for this project (see [demo/SOURCES.md](demo/SOURCES.md)).
