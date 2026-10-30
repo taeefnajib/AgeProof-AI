@@ -3,6 +3,7 @@ import { DISCLAIMER } from "@/components/Disclaimer";
 import { checklistFor } from "../checklist";
 import { findingsOverlaySvg } from "../render/overlay";
 import { PRIORITY_STYLE } from "../render/palette";
+import { priorityCounts, questionsFor } from "../pipeline/report";
 import type { PhotoAnalysis } from "../schema/analysis";
 import { ROOM_NAMES, CATEGORY_LABEL } from "../labels";
 
@@ -108,8 +109,31 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
     `${ROOM_NAMES[a.room_type]} · photo screened ${reportDate(a)} · ${a.findings.length} possible ${
       a.findings.length === 1 ? "hazard" : "hazards"
     } marked`,
-    { size: 9.5, colour: MUTED, gap: 3 },
+    { size: 9.5, colour: MUTED, gap: 2 },
   );
+  // Priority summary chips
+  const counts = priorityCounts(a.findings);
+  let cx = M;
+  doc.setFont("helvetica", "normal").setFontSize(8.5);
+  for (const p of ["discuss_soon", "worth_checking", "minor"] as const) {
+    if (!counts[p]) continue;
+    const label = `${counts[p]} ${PRIORITY_STYLE[p].label.toLowerCase()}`;
+    const w = doc.getTextWidth(label) + 8;
+    doc.setDrawColor(230, 225, 216).roundedRect(cx, y, w, 5.5, 2.75, 2.75, "S");
+    doc.setFillColor(...hex(PRIORITY_STYLE[p].colour)).circle(cx + 2.8, y + 2.75, 1.2, "F");
+    doc.setTextColor(...INK).text(label, cx + 5, y + 3.8);
+    cx += w + 2;
+  }
+  if (cx > M) y += 8;
+  // Filled in by hand: nothing personal is collected by the app.
+  doc.setFontSize(9).setTextColor(...MUTED);
+  doc.text("Prepared for", M, y + 3);
+  doc.text("Visit date", M + width / 2 + 4, y + 3);
+  doc.setLineDashPattern([0.8, 0.8], 0).setDrawColor(...MUTED);
+  doc.line(M + 21, y + 3.5, M + width / 2 - 2, y + 3.5);
+  doc.line(M + width / 2 + 21, y + 3.5, M + width, y + 3.5);
+  doc.setLineDashPattern([], 0);
+  y += 8;
   doc.setDrawColor(230, 225, 216);
   doc.setFillColor(250, 248, 244);
   const discLines = doc.setFontSize(8.5).splitTextToSize(clean(DISCLAIMER), width - 8) as string[];
@@ -157,6 +181,20 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
     text(`To discuss: ${f.suggestion}`, { size: 9.5, colour: ACCENT, x, gap: 4 });
   });
 
+  // Questions for the OT, one per finding
+  const otQuestions = questionsFor(a.findings);
+  if (otQuestions.length) {
+    ensure(20);
+    y += 2;
+    text("Questions to ask your OT", { size: 13, style: "bold", gap: 2 });
+    for (const q of otQuestions) {
+      ensure(8);
+      text(`${q.number}.`, { size: 9.5, style: "bold", colour: MUTED, gap: 0 });
+      y -= 9.5 * 0.42;
+      text(`${q.question} (${q.title})`, { size: 9.5, x: M + 6, gap: 1.4 });
+    }
+  }
+
   // Questions a photo can't answer
   ensure(20);
   y += 2;
@@ -173,8 +211,19 @@ export async function buildReportPdf(a: PhotoAnalysis, photoJpeg?: string): Prom
     text(q, { size: 9.5, x: M + 6, gap: 1.2 });
   }
 
-  // How it was made, then footers
+  // Space for handwritten notes
+  ensure(36);
   y += 3;
+  text("Notes from the visit", { size: 13, style: "bold", gap: 3 });
+  doc.setLineDashPattern([0.8, 0.8], 0).setDrawColor(...MUTED);
+  for (let i = 0; i < 4; i++) {
+    y += 7;
+    doc.line(M, y, M + width, y);
+  }
+  doc.setLineDashPattern([], 0);
+  y += 6;
+
+  // How it was made, then footers
   text(
     "How this was made: SAM 3.1 outlined objects in the photo, measured rules checked them, and Muse Spark wrote the explanations. Every marked finding points at an outlined region. People in the photo were blurred, and the photo was not stored.",
     { size: 8, colour: MUTED },

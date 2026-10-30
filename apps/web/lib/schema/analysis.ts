@@ -30,6 +30,17 @@ export const ConceptRunSchema = z.object({
   cached: z.boolean(),
 });
 
+/**
+ * Whether the photo can be screened. Muse Spark's inventory judges it; measured
+ * brightness and sharpness can overrule it when the photo is clearly unusable.
+ */
+export const PhotoCheckSchema = z.object({
+  quality: z.enum(["ok", "too_dark", "too_blurry", "not_a_room"]),
+  source: z.enum(["model", "measured", "user"]),
+  detail: z.string(),
+});
+export type PhotoCheck = z.infer<typeof PhotoCheckSchema>;
+
 /** Everything the result page needs for one photo. */
 export const PhotoAnalysisSchema = z.object({
   id: z.string(),
@@ -40,6 +51,11 @@ export const PhotoAnalysisSchema = z.object({
   image_data_url: z.string(),
   people_blurred: z.number().int(),
   luminance: LuminanceSchema,
+  /** Focus measure (variance of Laplacian); optional for results saved before it existed. */
+  sharpness: z.number().optional(),
+  photo_check: PhotoCheckSchema.optional(),
+  /** Set when replayed from demo/ cached output instead of live model calls. */
+  demo: z.boolean().optional(),
   inventory: InventorySchema,
   /** Room type used downstream: the user's override, else the inventory's guess. */
   room_type: RoomTypeSchema,

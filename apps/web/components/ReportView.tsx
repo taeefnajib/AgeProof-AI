@@ -13,6 +13,7 @@ import {
 import { useStoredResult } from "@/lib/client/useStoredResult";
 import { checklistFor } from "@/lib/checklist";
 import { CATEGORY_LABEL, ROOM_NAMES } from "@/lib/labels";
+import { priorityCounts, questionsFor } from "@/lib/pipeline/report";
 import { PRIORITY_STYLE } from "@/lib/render/palette";
 import type { PhotoAnalysis } from "@/lib/schema/analysis";
 import { Disclaimer } from "./Disclaimer";
@@ -90,6 +91,8 @@ function Report({ analysis: a }: { analysis: PhotoAnalysis }) {
   };
 
   const questions = checklistFor(a.room_type);
+  const otQuestions = questionsFor(a.findings);
+  const counts = priorityCounts(a.findings);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8 print:max-w-none print:px-0 print:py-0">
@@ -132,6 +135,30 @@ function Report({ analysis: a }: { analysis: PhotoAnalysis }) {
             {ROOM_NAMES[a.room_type]} · photo screened {reportDate(a)} · {a.findings.length} possible{" "}
             {a.findings.length === 1 ? "hazard" : "hazards"} marked
           </p>
+          {a.findings.length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-2 text-xs">
+              {(["discuss_soon", "worth_checking", "minor"] as const)
+                .filter((p) => counts[p] > 0)
+                .map((p) => (
+                  <li
+                    key={p}
+                    className="flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1"
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: PRIORITY_STYLE[p].colour }} />
+                    {counts[p]} {PRIORITY_STYLE[p].label.toLowerCase()}
+                  </li>
+                ))}
+            </ul>
+          )}
+          {/* Filled in by hand: nothing personal is collected by the app. */}
+          <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm text-muted sm:grid-cols-2">
+            {["Prepared for", "Visit date"].map((label) => (
+              <div key={label} className="flex items-end gap-2">
+                <dt className="shrink-0">{label}</dt>
+                <dd className="h-5 flex-1 border-b border-dashed border-line" />
+              </div>
+            ))}
+          </dl>
         </header>
 
         <Disclaimer className="mt-5" />
@@ -186,6 +213,22 @@ function Report({ analysis: a }: { analysis: PhotoAnalysis }) {
           </ol>
         )}
 
+        {otQuestions.length > 0 && (
+          <section className="mt-8 break-inside-avoid">
+            <h2 className="font-display text-xl">Questions to ask your OT</h2>
+            <ol className="mt-3 space-y-2 text-sm">
+              {otQuestions.map((q) => (
+                <li key={q.number} className="flex gap-3">
+                  <span className="w-6 shrink-0 text-right font-semibold text-muted">{q.number}.</span>
+                  <span>
+                    {q.question} <span className="text-muted">({q.title})</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         <h2 className="mt-8 font-display text-xl">Also check in person</h2>
         <p className="mt-1 text-sm text-muted">
           A photo can&apos;t show these. They&apos;re good questions for an occupational therapist.
@@ -198,6 +241,15 @@ function Report({ analysis: a }: { analysis: PhotoAnalysis }) {
             </li>
           ))}
         </ul>
+
+        <section className="mt-8 break-inside-avoid">
+          <h2 className="font-display text-xl">Notes from the visit</h2>
+          <div className="mt-3 space-y-6" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="border-b border-dashed border-line" />
+            ))}
+          </div>
+        </section>
 
         <p className="mt-8 text-xs leading-relaxed text-muted">
           How this was made: SAM 3.1 outlined objects in the photo, measured rules checked them, and Muse Spark

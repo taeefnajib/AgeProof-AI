@@ -11,10 +11,12 @@ export async function analyzeOnServer(
   photo: Blob,
   roomType: RoomType | "auto",
   onStep: (timing: StepTiming) => void,
+  opts: { forceRoom?: boolean } = {},
 ): Promise<PhotoAnalysis> {
   const form = new FormData();
   form.append("photo", photo, "photo.jpg");
   form.append("roomType", roomType);
+  if (opts.forceRoom) form.append("forceRoom", "1");
   const res = await fetch("/api/analyze", { method: "POST", body: form });
   if (!res.ok || !res.body) {
     const err = await res.json().catch(() => ({ error: `Request failed (${res.status})` }));

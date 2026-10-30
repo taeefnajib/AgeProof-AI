@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { SAM_MODEL } from "../meta/client";
 import { EXPLAIN_PROMPT_VERSION } from "../prompts/explain";
 import { INVENTORY_PROMPT_VERSION } from "../prompts/inventory";
-import type { PhotoAnalysis, StepTiming } from "../schema/analysis";
+import type { PhotoAnalysis, PhotoCheck, StepTiming } from "../schema/analysis";
+import type { Inventory } from "../schema/inventory";
 import type { ValidationStats } from "../schema/validation";
 import { ALWAYS_SEGMENT, type RoomType } from "../schema/vocabulary";
 import { runExplain } from "./explain";
@@ -14,13 +15,49 @@ import { removeWornShoes, runRules } from "./rules";
 import { runSegment } from "./segment";
 import { validateFindings } from "./validate";
 
+/** Measured limits that overrule the model: only clearly unusable photos (see preprocess.ts). */
+export const MIN_MEAN_LUMA = 25;
+/** % of very dark pixels above which nothing can be seen (the dim demo hallway is 77%). */
+export const MAX_DARK_PCT = 92;
+export const MIN_SHARPNESS = 15;
+
+/**
+ * Decide whether the photo can be screened. The inventory's judgement stands
+ * unless brightness or sharpness measurements say it's clearly unusable.
+ * `forceRoom` is the user saying "this is a room in my home" after a not_a_room
+ * verdict; it never overrides darkness or blur.
+ */
+export function checkPhoto(
+  inv: Pick<Inventory, "is_room_photo" | "photo_quality" | "notes">,
+  luminance: { mean: number; dark_pct: number },
+  sharpness: number,
+  forceRoom = false,
+): PhotoCheck {
+  if (luminance.mean < MIN_MEAN_LUMA || luminance.dark_pct > MAX_DARK_PCT) {
+    return {
+      quality: "too_dark",
+      source: "measured",
+      detail: `mean brightness ${luminance.mean}/255, ${luminance.dark_pct}% of pixels very dark`,
+    };
+  }
+  if (sharpness < MIN_SHARPNESS) {
+    return { quality: "too_blurry", source: "measured", detail: `sharpness ${sharpness} (clear photos usually score over 150)` };
+  }
+  const quality = inv.is_room_photo ? inv.photo_quality : "not_a_room";
+  if (quality === "not_a_room" && forceRoom) {
+    return { quality: "ok", source: "user", detail: "screened at your request" };
+  }
+  // is_room_photo false wins over a photo_quality of "ok".
+  return { quality, source: "model", detail: inv.notes };
+}
+
 /**
  * Runs the pipeline for one photo:
  * preprocess → inventory → segment → rules → (blur people) → explain → validate.
  */
 export async function analyzePhoto(
   input: Buffer,
-  opts: { roomType?: RoomType; onStep?: (timing: StepTiming) => void } = {},
+  opts: { roomType?: RoomType; forceRoom?: boolean; onStep?: (timing: StepTiming) => void } = {},
 ): Promise<PhotoAnalysis> {
   const timings: StepTiming[] = [];
   const record = (timing: StepTiming) => {
@@ -41,9 +78,10 @@ export async function analyzePhoto(
     cached: inv.cached,
   });
 
-  // Not a usable room photo: don't spend SAM calls; the UI asks for a better photo.
-  const usable = inv.data.is_room_photo && inv.data.photo_quality === "ok";
-  const concepts = usable ? [...new Set<string>([...inv.data.concepts, ...ALWAYS_SEGMENT])] : [];
+  // Not a usable room photo: only find people (so they can be blurred), and the UI asks for a better photo.
+  const photoCheck = checkPhoto(inv.data, pre.luminance, pre.sharpness, opts.forceRoom);
+  const usable = photoCheck.quality === "ok";
+  const concepts = usable ? [...new Set<string>([...inv.data.concepts, ...ALWAYS_SEGMENT])] : ["person"];
   t = Date.now();
   const seg = await runSegment({
     imageDataUrl: pre.dataUrl,
@@ -131,6 +169,8 @@ export async function analyzePhoto(
     image_data_url: photoDataUrl,
     people_blurred: privacy.blurred,
     luminance: pre.luminance,
+    sharpness: pre.sharpness,
+    photo_check: photoCheck,
     inventory: inv.data,
     room_type: roomType,
     room_type_source: opts.roomType ? "user" : "auto",

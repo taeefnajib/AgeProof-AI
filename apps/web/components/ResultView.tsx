@@ -13,13 +13,7 @@ import { FindingsOverlay } from "./FindingsOverlay";
 import { PipelineTimeline } from "./PipelineTimeline";
 import { RegionOverlay } from "./RegionOverlay";
 import { RoomChecklist } from "./RoomChecklist";
-
-const QUALITY_MESSAGES: Record<string, string> = {
-  too_dark: "This photo looks too dark to screen. Please turn on the lights or open the curtains and try again.",
-  too_blurry: "This photo looks blurry. Please hold the camera steady and try again.",
-  not_a_room:
-    "This doesn't look like a photo of a room in a home. Please upload a photo of a bathroom, bedroom or living room.",
-};
+import { UnusablePhoto } from "./UnusablePhoto";
 
 export function ResultView() {
   const { id } = useParams<{ id: string }>();
@@ -51,7 +45,13 @@ export function ResultView() {
     );
   }
 
-  const qualityMessage = QUALITY_MESSAGES[analysis.inventory.photo_quality];
+  // Results saved before photo_check existed fall back to the inventory's verdict.
+  const check = analysis.photo_check ?? {
+    quality: analysis.inventory.is_room_photo ? analysis.inventory.photo_quality : "not_a_room",
+    source: "model" as const,
+    detail: analysis.inventory.notes,
+  };
+  if (check.quality !== "ok") return <UnusablePhoto analysis={analysis} check={check} />;
   const counts = (["discuss_soon", "worth_checking", "minor"] as const).map((p) => ({
     p,
     n: analysis.findings.filter((f) => f.priority === p).length,
@@ -89,14 +89,12 @@ export function ResultView() {
           >
             Screen another photo
           </Link>
-          {!qualityMessage && (
-            <Link
-              href={`/report/${analysis.id}`}
-              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
-              Generate OT report
-            </Link>
-          )}
+          <Link
+            href={`/report/${analysis.id}`}
+            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            Generate OT report
+          </Link>
         </div>
       </div>
 
@@ -104,9 +102,10 @@ export function ResultView() {
         <PipelineTimeline timings={analysis.timings} running={false} />
       </div>
 
-      {qualityMessage && (
-        <p role="alert" className="mt-5 rounded-xl border border-amber/50 bg-amber/10 px-4 py-3">
-          {qualityMessage}
+      {check.source === "user" && (
+        <p className="mt-5 rounded-xl border border-amber/50 bg-amber/10 px-4 py-3 text-sm">
+          The model wasn&apos;t sure this is a room in a home, so it was screened at your request. Findings may be
+          less reliable.
         </p>
       )}
 

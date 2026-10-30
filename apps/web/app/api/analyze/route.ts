@@ -22,7 +22,7 @@ function describeError(e: unknown): string {
 }
 
 /**
- * POST multipart { photo: File, roomType?: RoomType | "auto" }.
+ * POST multipart { photo: File, roomType?: RoomType | "auto", forceRoom?: "1" }.
  * Streams NDJSON: {type:"step",...} per finished pipeline step, then
  * {type:"result", analysis} or {type:"error", message}.
  * Nothing is persisted server-side; the browser keeps the result for the session.
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
       try {
         const analysis = await analyzePhoto(input, {
           roomType: roomType.success ? roomType.data : undefined,
+          forceRoom: form?.get("forceRoom") === "1",
           onStep: (timing) => send({ type: "step", ...timing }),
         });
         send({ type: "result", analysis });

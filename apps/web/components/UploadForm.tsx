@@ -76,7 +76,8 @@ export function UploadForm() {
   const onFiles = (files: FileList | null) => {
     const file = files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
+    // Some browsers give HEIC files an empty type; let downscaleImage try them.
+    if (file.type && !file.type.startsWith("image/")) {
       setError("Please choose a photo (JPEG, PNG or HEIC exported as JPEG).");
       return;
     }

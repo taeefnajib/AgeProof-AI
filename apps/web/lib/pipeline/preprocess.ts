@@ -6,6 +6,32 @@ export const MAX_SIDE = 1600;
 /** Luma below this (0–255) counts as a "dark" pixel for the lighting check. */
 export const DARK_LUMA = 50;
 
+/**
+ * Variance of the Laplacian on a 512px greyscale copy: a standard focus measure.
+ * Calibrated on demo/: sharp photos score 170–2700, a heavy blur (σ=8) scores under 12.
+ */
+export async function sharpness(jpeg: Buffer): Promise<number> {
+  const { data, info } = await sharp(jpeg)
+    .resize(512, 512, { fit: "inside" })
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  let s = 0;
+  let s2 = 0;
+  let n = 0;
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+      const v = data[i - w] + data[i + w] + data[i - 1] + data[i + 1] - 4 * data[i];
+      s += v;
+      s2 += v * v;
+      n++;
+    }
+  }
+  return Math.round(s2 / n - (s / n) ** 2);
+}
+
 export type Preprocessed = {
   jpeg: Buffer;
   dataUrl: string;
@@ -13,6 +39,7 @@ export type Preprocessed = {
   width: number;
   height: number;
   luminance: Luminance;
+  sharpness: number;
 };
 
 /**
@@ -45,5 +72,6 @@ export async function preprocess(input: Buffer): Promise<Preprocessed> {
       mean: Math.round((sum / data.length) * 10) / 10,
       dark_pct: Math.round((dark / data.length) * 1000) / 10,
     },
+    sharpness: await sharpness(jpeg),
   };
 }
